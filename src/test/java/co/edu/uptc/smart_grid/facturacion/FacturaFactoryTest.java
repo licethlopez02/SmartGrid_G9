@@ -6,8 +6,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import co.edu.uptc.smart_grid.facturacion.aplicacion.FacturaFactory;
+import co.edu.uptc.smart_grid.facturacion.aplicacion.GeneracionFacturaService;
 import co.edu.uptc.smart_grid.facturacion.aplicacion.RepositorioFacturas;
+import co.edu.uptc.smart_grid.facturacion.dominio.EstadoFactura;
 import co.edu.uptc.smart_grid.facturacion.dominio.Factura;
+import co.edu.uptc.smart_grid.facturacion.dominio.FacturaDuplicadaException;
+import co.edu.uptc.smart_grid.facturacion.dominio.PeriodoIncompletoException;
 import co.edu.uptc.smart_grid.facturacion.dominio.TarifaVigente;
 
 import java.math.BigDecimal;

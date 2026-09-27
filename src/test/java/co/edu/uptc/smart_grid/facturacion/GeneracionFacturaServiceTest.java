@@ -2,6 +2,7 @@ package co.edu.uptc.smart_grid.facturacion;
 
 import org.junit.jupiter.api.Test;
 
+import co.edu.uptc.smart_grid.facturacion.aplicacion.GeneracionFacturaService;
 import co.edu.uptc.smart_grid.facturacion.dominio.TarifaVigente;
 
 import java.math.BigDecimal;

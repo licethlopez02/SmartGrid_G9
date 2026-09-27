@@ -1,6 +1,5 @@
 package co.edu.uptc.smart_grid.facturacion.aplicacion;
 
-import co.edu.uptc.smart_grid.facturacion.FacturaFactory;
 import co.edu.uptc.smart_grid.facturacion.dominio.Factura;
 import co.edu.uptc.smart_grid.facturacion.dominio.TarifaVigente;
 import org.springframework.stereotype.Service;

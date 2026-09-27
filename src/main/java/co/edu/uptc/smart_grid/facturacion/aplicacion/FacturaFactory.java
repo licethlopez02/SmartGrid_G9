@@ -1,8 +1,10 @@
-package co.edu.uptc.smart_grid.facturacion;
+package co.edu.uptc.smart_grid.facturacion.aplicacion;
 
 import org.springframework.stereotype.Component;
 
 import co.edu.uptc.smart_grid.facturacion.dominio.Factura;
+import co.edu.uptc.smart_grid.facturacion.dominio.FacturaDuplicadaException;
+import co.edu.uptc.smart_grid.facturacion.dominio.PeriodoIncompletoException;
 import co.edu.uptc.smart_grid.facturacion.dominio.TarifaVigente;
 
 import java.math.BigDecimal;
@@ -11,12 +13,12 @@ import java.time.LocalDate;
 @Component
 public class FacturaFactory {
 
-    private final FacturaRepository facturaRepository;
+    private final RepositorioFacturas repositorioFacturas;
     private final GeneracionFacturaService generacionFacturaService;
 
-    public FacturaFactory(FacturaRepository facturaRepository,
+    public FacturaFactory(RepositorioFacturas repositorioFacturas,
                            GeneracionFacturaService generacionFacturaService) {
-        this.facturaRepository = facturaRepository;
+        this.repositorioFacturas = repositorioFacturas;
         this.generacionFacturaService = generacionFacturaService;
     }
 
@@ -24,7 +26,7 @@ public class FacturaFactory {
                           BigDecimal consumoAcumuladoKwh, boolean periodoCompleto,
                           TarifaVigente tarifaVigente) {
 
-        if (facturaRepository.existsByMedidorIdAndPeriodoInicioAndPeriodoFin(medidorId, periodoInicio, periodoFin)) {
+        if (repositorioFacturas.existePorMedidorYPeriodo(medidorId, periodoInicio, periodoFin)) {
             throw new FacturaDuplicadaException(
                 "Ya existe una factura generada para el medidor " + medidorId + " en ese período.");
         }

@@ -1,4 +1,4 @@
-package co.edu.uptc.smart_grid.facturacion;
+package co.edu.uptc.smart_grid.facturacion.aplicacion;
 
 import org.springframework.stereotype.Service;
 

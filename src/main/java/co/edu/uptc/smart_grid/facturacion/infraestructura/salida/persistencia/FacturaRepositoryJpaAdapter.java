@@ -1,6 +1,5 @@
 package co.edu.uptc.smart_grid.facturacion.infraestructura.salida.persistencia;
 
-import co.edu.uptc.smart_grid.facturacion.FacturaRepository;
 import co.edu.uptc.smart_grid.facturacion.aplicacion.RepositorioFacturas;
 import co.edu.uptc.smart_grid.facturacion.dominio.Factura;
 import org.springframework.stereotype.Component;
