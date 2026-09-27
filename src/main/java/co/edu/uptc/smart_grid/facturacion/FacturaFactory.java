@@ -2,6 +2,9 @@ package co.edu.uptc.smart_grid.facturacion;
 
 import org.springframework.stereotype.Component;
 
+import co.edu.uptc.smart_grid.facturacion.dominio.Factura;
+import co.edu.uptc.smart_grid.facturacion.dominio.TarifaVigente;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
