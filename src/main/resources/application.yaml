@@ -3,3 +3,11 @@ server:
 spring:
   application:
     name: smart_grid
+  docker:
+    compose:
+      skip:
+        in-tests: false
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect

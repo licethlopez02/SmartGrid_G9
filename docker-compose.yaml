@@ -1,0 +1,15 @@
+services:
+      postgres:
+        image: postgres:16
+        environment:
+          POSTGRES_DB: smart_grid
+          POSTGRES_USER: smart_grid_user
+          POSTGRES_PASSWORD: smart_grid_pass
+        ports:
+          - "5432:5432"
+        healthcheck:
+          test: ["CMD-SHELL", "pg_isready -U smart_grid_user -d smart_grid"]
+          interval: 2s
+          timeout: 3s
+          retries: 20
+          start_period: 5s
