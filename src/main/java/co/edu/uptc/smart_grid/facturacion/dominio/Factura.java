@@ -60,6 +60,10 @@ public class Factura {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Long getMedidorId() {
         return medidorId;
     }
