@@ -1,6 +1,9 @@
-package co.edu.uptc.smart_grid.facturacion;
+package co.edu.uptc.smart_grid.facturacion.aplicacion;
 
 import org.springframework.stereotype.Service;
+
+import co.edu.uptc.smart_grid.facturacion.dominio.TarifaVigente;
+
 import java.time.LocalDate;
 
 @Service

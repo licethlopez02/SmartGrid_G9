@@ -1,4 +1,4 @@
-package co.edu.uptc.smart_grid.facturacion;
+package co.edu.uptc.smart_grid.facturacion.dominio;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

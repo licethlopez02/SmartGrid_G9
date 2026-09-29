@@ -1,4 +1,4 @@
-package co.edu.uptc.smart_grid.facturacion;
+package co.edu.uptc.smart_grid.facturacion.dominio;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -42,7 +42,7 @@ public class Factura {
 
     protected Factura() {}
 
-    Factura(Long medidorId, LocalDate periodoInicio, LocalDate periodoFin,
+    public Factura(Long medidorId, LocalDate periodoInicio, LocalDate periodoFin,
             BigDecimal consumoAcumuladoKwh, TarifaVigente tarifaAplicada, LocalDate fechaGeneracion) {
         this.medidorId = medidorId;
         this.periodoInicio = periodoInicio;
@@ -54,15 +54,47 @@ public class Factura {
         this.estado = EstadoFactura.PENDIENTE;
     }
 
-    public Long getId() { return id; }
-    public Long getMedidorId() { return medidorId; }
-    public LocalDate getPeriodoInicio() { return periodoInicio; }
-    public LocalDate getPeriodoFin() { return periodoFin; }
-    public BigDecimal getConsumoAcumuladoKwh() { return consumoAcumuladoKwh; }
-    public TarifaVigente getTarifaAplicada() { return tarifaAplicada; }
-    public BigDecimal getMontoTotal() { return montoTotal; }
-    public EstadoFactura getEstado() { return estado; }
-    public LocalDate getFechaGeneracion() { return fechaGeneracion; }
+    
+    
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getMedidorId() {
+        return medidorId;
+    }
+
+    public LocalDate getPeriodoInicio() {
+        return periodoInicio;
+    }
+
+    public LocalDate getPeriodoFin() {
+        return periodoFin;
+    }
+
+    public BigDecimal getConsumoAcumuladoKwh() {
+        return consumoAcumuladoKwh;
+    }
+
+    public TarifaVigente getTarifaAplicada() {
+        return tarifaAplicada;
+    }
+
+    public BigDecimal getMontoTotal() {
+        return montoTotal;
+    }
+
+    public EstadoFactura getEstado() {
+        return estado;
+    }
+
+    public LocalDate getFechaGeneracion() {
+        return fechaGeneracion;
+    }
 
     @Override
     public boolean equals(Object o) {

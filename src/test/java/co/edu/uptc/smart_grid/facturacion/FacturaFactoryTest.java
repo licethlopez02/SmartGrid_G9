@@ -6,6 +6,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import co.edu.uptc.smart_grid.facturacion.aplicacion.FacturaFactory;
+import co.edu.uptc.smart_grid.facturacion.aplicacion.GeneracionFacturaService;
+import co.edu.uptc.smart_grid.facturacion.aplicacion.RepositorioFacturas;
+import co.edu.uptc.smart_grid.facturacion.dominio.EstadoFactura;
+import co.edu.uptc.smart_grid.facturacion.dominio.Factura;
+import co.edu.uptc.smart_grid.facturacion.dominio.FacturaDuplicadaException;
+import co.edu.uptc.smart_grid.facturacion.dominio.PeriodoIncompletoException;
+import co.edu.uptc.smart_grid.facturacion.dominio.TarifaVigente;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -17,14 +26,14 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class FacturaFactoryTest {
 
-    @Mock private FacturaRepository facturaRepository;
+    @Mock private RepositorioFacturas repositorioFacturas;
     @Mock private GeneracionFacturaService generacionFacturaService;
 
     private FacturaFactory facturaFactory;
 
     @BeforeEach
     void setUp() {
-        facturaFactory = new FacturaFactory(facturaRepository, generacionFacturaService);
+        facturaFactory = new FacturaFactory(repositorioFacturas, generacionFacturaService);
     }
 
     @Test
@@ -34,7 +43,7 @@ class FacturaFactoryTest {
         LocalDate fin = LocalDate.of(2026, 6, 30);
         TarifaVigente tarifa = new TarifaVigente(new BigDecimal("850"), LocalDate.of(2026, 1, 1), null);
 
-        when(facturaRepository.existsByMedidorIdAndPeriodoInicioAndPeriodoFin(medidorId, inicio, fin))
+        when(repositorioFacturas.existePorMedidorYPeriodo(medidorId, inicio, fin))
             .thenReturn(true);
 
         assertThrows(FacturaDuplicadaException.class, () ->
@@ -48,7 +57,7 @@ class FacturaFactoryTest {
         LocalDate fin = LocalDate.of(2026, 6, 30);
         TarifaVigente tarifa = new TarifaVigente(new BigDecimal("850"), LocalDate.of(2026, 1, 1), null);
 
-        when(facturaRepository.existsByMedidorIdAndPeriodoInicioAndPeriodoFin(medidorId, inicio, fin))
+        when(repositorioFacturas.existePorMedidorYPeriodo(medidorId, inicio, fin))
             .thenReturn(false);
         when(generacionFacturaService.puedeGenerarse(eq(false), any(), eq(fin)))
             .thenReturn(false);
@@ -64,7 +73,7 @@ class FacturaFactoryTest {
         LocalDate fin = LocalDate.of(2026, 6, 30);
         TarifaVigente tarifa = new TarifaVigente(new BigDecimal("850"), LocalDate.of(2026, 1, 1), null);
 
-        when(facturaRepository.existsByMedidorIdAndPeriodoInicioAndPeriodoFin(medidorId, inicio, fin))
+        when(repositorioFacturas.existePorMedidorYPeriodo(medidorId, inicio, fin))
             .thenReturn(false);
         when(generacionFacturaService.puedeGenerarse(true, tarifa, fin))
             .thenReturn(true);
