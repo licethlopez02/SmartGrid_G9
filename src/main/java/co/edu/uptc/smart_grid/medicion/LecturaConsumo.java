@@ -4,9 +4,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 
-/**
- * Measurement reported by a meter at a point in time.
- */
 public record LecturaConsumo(
 		BigDecimal valor,
 		Instant timestamp,
@@ -26,10 +23,6 @@ public record LecturaConsumo(
 		}
 	}
 
-	/**
-	 * Indicates whether this reading is suspicious when compared with a reference value.
-	 * A zero reading is suspicious by itself; otherwise, a change greater than 50% is suspicious.
-	 */
 	public boolean sugiereSensorDefectuoso(BigDecimal valorReferencia) {
 		Objects.requireNonNull(valorReferencia, "El valor de referencia es obligatorio");
 		if (valorReferencia.signum() < 0) {
