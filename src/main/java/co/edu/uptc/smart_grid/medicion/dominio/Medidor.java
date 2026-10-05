@@ -1,4 +1,4 @@
-package co.edu.uptc.smart_grid.medicion;
+package co.edu.uptc.smart_grid.medicion.dominio;
 
 import java.time.Instant;
 import java.util.ArrayList;

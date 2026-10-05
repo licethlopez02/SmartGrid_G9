@@ -1,4 +1,4 @@
-package co.edu.uptc.smart_grid.medicion;
+package co.edu.uptc.smart_grid.medicion.dominio;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
