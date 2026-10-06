@@ -28,6 +28,12 @@ public class MedidorPersistenceAdapter implements MedidorRepositoryPort {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public List<Medidor> listar() {
+		return repository.findAll().stream().map(this::toDomain).toList();
+	}
+
+	@Override
 	public Medidor guardar(Medidor medidor) {
 		Objects.requireNonNull(medidor, "El medidor es obligatorio");
 		repository.save(toEntity(medidor));

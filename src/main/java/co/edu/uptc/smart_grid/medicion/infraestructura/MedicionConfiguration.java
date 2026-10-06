@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 
 import co.edu.uptc.smart_grid.medicion.aplicacion.puerto.salida.MedidorRepositoryPort;
 import co.edu.uptc.smart_grid.medicion.aplicacion.servicio.DetectarAnomaliaApplicationService;
+import co.edu.uptc.smart_grid.medicion.aplicacion.servicio.ConsultarMedicionApplicationService;
 import co.edu.uptc.smart_grid.medicion.aplicacion.servicio.RegistrarMedidorApplicationService;
 
 @Configuration
@@ -20,5 +21,11 @@ public class MedicionConfiguration {
 	public RegistrarMedidorApplicationService registrarMedidorApplicationService(
 			MedidorRepositoryPort medidorRepository) {
 		return new RegistrarMedidorApplicationService(medidorRepository);
+	}
+
+	@Bean
+	public ConsultarMedicionApplicationService consultarMedicionApplicationService(
+			MedidorRepositoryPort medidorRepository) {
+		return new ConsultarMedicionApplicationService(medidorRepository);
 	}
 }
