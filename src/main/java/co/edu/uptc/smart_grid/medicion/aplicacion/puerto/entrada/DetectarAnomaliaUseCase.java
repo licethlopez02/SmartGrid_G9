@@ -5,5 +5,5 @@ import co.edu.uptc.smart_grid.medicion.dominio.ResultadoDeteccion;
 
 public interface DetectarAnomaliaUseCase {
 
-	ResultadoDeteccion detectar(String medidorId, LecturaConsumo nuevaLectura);
+	ResultadoDeteccion detectar(Long medidorId, LecturaConsumo nuevaLectura);
 }

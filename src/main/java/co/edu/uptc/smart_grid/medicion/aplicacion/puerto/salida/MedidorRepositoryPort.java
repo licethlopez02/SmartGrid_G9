@@ -6,7 +6,7 @@ import co.edu.uptc.smart_grid.medicion.dominio.Medidor;
 
 public interface MedidorRepositoryPort {
 
-	Optional<Medidor> buscarPorId(String medidorId);
+	Optional<Medidor> buscarPorId(Long medidorId);
 
 	Medidor guardar(Medidor medidor);
 }

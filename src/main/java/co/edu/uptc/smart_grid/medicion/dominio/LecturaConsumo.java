@@ -10,7 +10,7 @@ import java.util.Objects;
 public record LecturaConsumo(
 		BigDecimal valor,
 		Instant timestamp,
-		String medidorId) {
+		Long medidorId) {
 
 	private static final BigDecimal CAMBIO_ANOMALO = new BigDecimal("0.50");
 
@@ -18,9 +18,6 @@ public record LecturaConsumo(
 		Objects.requireNonNull(valor, "El valor del consumo es obligatorio");
 		Objects.requireNonNull(timestamp, "El timestamp de la lectura es obligatorio");
 		Objects.requireNonNull(medidorId, "El id del medidor es obligatorio");
-		if (medidorId.isBlank()) {
-			throw new IllegalArgumentException("El id del medidor no puede estar vacío");
-		}
 		if (valor.signum() < 0) {
 			throw new IllegalArgumentException("El consumo no puede ser negativo");
 		}
