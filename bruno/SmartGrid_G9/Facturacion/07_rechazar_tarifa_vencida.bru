@@ -1,0 +1,35 @@
+meta {
+  name: 07 - Rechazar tarifa no vigente
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/facturas
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "medidorId": {{medidorSinFactura}},
+    "periodoInicio": "2025-03-01",
+    "periodoFin": "2025-03-31",
+    "consumoAcumuladoKwh": 40.0,
+    "periodoCompleto": true,
+    "tarifaValor": 650.00,
+    "tarifaVigenciaDesde": "2020-01-01",
+    "tarifaVigenciaHasta": "2025-03-30"
+  }
+}
+
+tests {
+  test("No genera factura si la tarifa no cubre la fecha de cierre", function() {
+    expect(res.status).to.equal(409);
+    expect(res.body).to.have.property("mensaje");
+  });
+}

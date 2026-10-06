@@ -1,0 +1,35 @@
+meta {
+  name: 08 - Rechazar tarifa invalida
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/facturas
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "medidorId": {{medidorSinFactura}},
+    "periodoInicio": "2025-04-01",
+    "periodoFin": "2025-04-30",
+    "consumoAcumuladoKwh": 22.0,
+    "periodoCompleto": true,
+    "tarifaValor": 0,
+    "tarifaVigenciaDesde": "2020-01-01",
+    "tarifaVigenciaHasta": "2030-12-31"
+  }
+}
+
+tests {
+  test("Una tarifa cero se rechaza como entrada invalida", function() {
+    expect(res.status).to.equal(400);
+    expect(res.body).to.have.property("mensaje");
+  });
+}

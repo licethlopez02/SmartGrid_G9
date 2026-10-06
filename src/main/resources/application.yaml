@@ -3,11 +3,14 @@ server:
 spring:
   application:
     name: smart_grid
-  docker:
-    compose:
-      skip:
-        in-tests: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/smart_grid
+    username: smart_grid_user
+    password: smart_grid_pass
+    driver-class-name: org.postgresql.Driver
   jpa:
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
