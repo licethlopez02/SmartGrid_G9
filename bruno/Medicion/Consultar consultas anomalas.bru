@@ -1,0 +1,16 @@
+meta {
+  name: Consultar consultas anomalas
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/medidores/{medidorId}/anomalias
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  forwardAuthorizationHeader: false
+}

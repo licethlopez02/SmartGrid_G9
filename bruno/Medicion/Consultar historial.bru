@@ -1,0 +1,16 @@
+meta {
+  name: Consultar historial
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/medidores/{medidorId}/lecturas
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  forwardAuthorizationHeader: false
+}

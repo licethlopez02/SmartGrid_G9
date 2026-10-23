@@ -1,0 +1,28 @@
+meta {
+  name: Recibir lectura y detectar anomalia
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/medidores/{{medidorId}}/lecturas
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "valor": 10.5,
+    "timestamp": "2026-10-06T10:00:00Z"
+  }
+}
+
+vars:pre-request {
+  medidorId: 2
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  forwardAuthorizationHeader: false
+}

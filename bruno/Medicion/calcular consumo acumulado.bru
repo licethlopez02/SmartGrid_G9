@@ -1,0 +1,16 @@
+meta {
+  name: calcular consumo acumulado
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/medidores/{medidorId}/consumo
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  forwardAuthorizationHeader: false
+}

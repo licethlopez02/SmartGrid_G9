@@ -1,0 +1,43 @@
+meta {
+  name: 01 - Generar factura
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/facturas
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "medidorId": {{medidorId}},
+    "periodoInicio": "2025-01-01",
+    "periodoFin": "2025-01-31",
+    "consumoAcumuladoKwh": 120.5,
+    "periodoCompleto": true,
+    "tarifaValor": 650.00,
+    "tarifaVigenciaDesde": "2020-01-01",
+    "tarifaVigenciaHasta": "2030-12-31"
+  }
+}
+
+vars:pre-request {
+  medidorId: 1
+}
+
+tests {
+  test("Crea una factura y devuelve el valor calculado", function() {
+    expect(res.status).to.equal(201);
+    expect(res.body).to.have.property("id");
+    expect(res.body.medidorId).to.equal(Number(bru.getEnvVar("medidorId")));
+    expect(res.body.montoTotal).to.equal(78325.0);
+    expect(res.body.estado).to.equal("PENDIENTE");
+    bru.setEnvVar("facturaId", res.body.id);
+  });
+}

@@ -1,0 +1,16 @@
+meta {
+  name: Registrar un medidor
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/medidores
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  forwardAuthorizationHeader: false
+}

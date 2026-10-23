@@ -1,0 +1,29 @@
+meta {
+  name: Lectura negativa
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/medidores/{{id}}/lecturas
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "valor": -4.5,
+    "timestamp": "2026-10-06T14:00:00Z"
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080
+  id: 1
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  forwardAuthorizationHeader: false
+}
