@@ -1,0 +1,18 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: facturacion-service
+  datasource:
+    url: jdbc:postgresql://localhost:5433/facturacion
+    username: facturacion_user
+    password: facturacion_pass
+    driver-class-name: org.postgresql.Driver
+  docker:
+    compose:
+      skip:
+        in-tests: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
