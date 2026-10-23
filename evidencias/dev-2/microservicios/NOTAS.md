@@ -43,3 +43,11 @@ que forzó el corte.## Paso 1 · El corte
 implicaría una librería compartida versionada aparte (shared kernel). Cada servicio
 necesita su propio manejo de errores, y esta es la primera decisión de arquitectura
 que forzó el corte.
+
+## Paso 4 · La costura con Medición
+
+Factura referencia al Medidor solo por `medidorId` (Long). `consumoAcumuladoKwh` y
+`periodoCompleto`, que según HU-06 salen de Medición, llegan hoy en `FacturaRequest`.
+En RICA, `PublicacionService` llamaba directo a `InvestigadorRepository`; aquí esa
+llamada no existe, por lo que no hubo nada que cortar en el código. La integración
+real por red (obtener el consumo de un `medidorId`) queda pendiente.
