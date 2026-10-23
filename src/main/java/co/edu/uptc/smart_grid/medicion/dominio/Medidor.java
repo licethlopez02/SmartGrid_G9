@@ -10,16 +10,16 @@ import java.util.Objects;
  */
 public final class Medidor {
 
-	private final String id;
+	private final Long id;
 	private final String ubicacion;
 	private final List<LecturaConsumo> lecturas = new ArrayList<>();
 
-	Medidor(String id, String ubicacion) {
-		this.id = validarTexto(id, "El id del medidor");
+	Medidor(Long id, String ubicacion) {
+		this.id = Objects.requireNonNull(id, "El id del medidor es obligatorio");
 		this.ubicacion = validarTexto(ubicacion, "La ubicación");
 	}
 
-	public String id() {
+	public Long id() {
 		return id;
 	}
 

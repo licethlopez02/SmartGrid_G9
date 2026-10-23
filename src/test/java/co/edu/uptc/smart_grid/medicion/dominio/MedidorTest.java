@@ -13,8 +13,8 @@ class MedidorTest {
 
 	@Test
 	void registrarLecturaAgregaLecturaValidaAlHistorial() {
-		Medidor medidor = MedidorFactory.crear("M-001", "Casa 1");
-		LecturaConsumo lectura = lectura("M-001", "10", 0);
+		Medidor medidor = MedidorFactory.crear(1L, "Casa 1");
+		LecturaConsumo lectura = lectura(1L, "10", 0);
 
 		medidor.registrarLectura(lectura);
 
@@ -23,27 +23,27 @@ class MedidorTest {
 
 	@Test
 	void registrarLecturaRechazaMedidorIdDiferente() {
-		Medidor medidor = MedidorFactory.crear("M-001", "Casa 1");
+		Medidor medidor = MedidorFactory.crear(1L, "Casa 1");
 
 		assertThrows(IllegalArgumentException.class,
-				() -> medidor.registrarLectura(lectura("M-002", "10", 0)));
+				() -> medidor.registrarLectura(lectura(2L, "10", 0)));
 	}
 
 	@Test
 	void registrarLecturaRechazaTimestampAnterior() {
-		Medidor medidor = MedidorFactory.crear("M-001", "Casa 1");
-		medidor.registrarLectura(lectura("M-001", "10", 10));
+		Medidor medidor = MedidorFactory.crear(1L, "Casa 1");
+		medidor.registrarLectura(lectura(1L, "10", 10));
 
 		assertThrows(IllegalArgumentException.class,
-				() -> medidor.registrarLectura(lectura("M-001", "12", 9)));
+				() -> medidor.registrarLectura(lectura(1L, "12", 9)));
 	}
 
 	@Test
 	void historialRecienteDevuelveLasUltimasLecturasEnOrden() {
-		Medidor medidor = MedidorFactory.crear("M-001", "Casa 1");
-		LecturaConsumo primera = lectura("M-001", "10", 0);
-		LecturaConsumo segunda = lectura("M-001", "12", 1);
-		LecturaConsumo tercera = lectura("M-001", "14", 2);
+		Medidor medidor = MedidorFactory.crear(1L, "Casa 1");
+		LecturaConsumo primera = lectura(1L, "10", 0);
+		LecturaConsumo segunda = lectura(1L, "12", 1);
+		LecturaConsumo tercera = lectura(1L, "14", 2);
 		medidor.registrarLectura(primera);
 		medidor.registrarLectura(segunda);
 		medidor.registrarLectura(tercera);
@@ -53,13 +53,13 @@ class MedidorTest {
 
 	@Test
 	void historialRecienteRechazaCantidadMenorQueUno() {
-		Medidor medidor = MedidorFactory.crear("M-001", "Casa 1");
+		Medidor medidor = MedidorFactory.crear(1L, "Casa 1");
 
 		assertThrows(IllegalArgumentException.class, () -> medidor.historialReciente(0));
 		assertThrows(IllegalArgumentException.class, () -> medidor.historialReciente(-1));
 	}
 
-	private static LecturaConsumo lectura(String medidorId, String valor, long segundo) {
+	private static LecturaConsumo lectura(Long medidorId, String valor, long segundo) {
 		return new LecturaConsumo(
 				new BigDecimal(valor), Instant.parse("2026-01-01T10:00:00Z").plusSeconds(segundo), medidorId);
 	}

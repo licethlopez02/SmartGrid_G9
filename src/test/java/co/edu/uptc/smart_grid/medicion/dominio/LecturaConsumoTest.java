@@ -15,21 +15,19 @@ class LecturaConsumoTest {
 	@Test
 	void creaLecturaValidaSinLanzarExcepcion() {
 		assertDoesNotThrow(() -> new LecturaConsumo(
-				new BigDecimal("12.50"), Instant.parse("2026-01-01T10:00:00Z"), "M-001"));
+				new BigDecimal("12.50"), Instant.parse("2026-01-01T10:00:00Z"), 1L));
 	}
 
 	@Test
 	void rechazaValorNegativo() {
 		assertThrows(IllegalArgumentException.class, () -> new LecturaConsumo(
-				new BigDecimal("-0.01"), Instant.parse("2026-01-01T10:00:00Z"), "M-001"));
+				new BigDecimal("-0.01"), Instant.parse("2026-01-01T10:00:00Z"), 1L));
 	}
 
 	@Test
-	void rechazaMedidorIdVacioOEnBlanco() {
-		assertThrows(IllegalArgumentException.class, () -> new LecturaConsumo(
-				new BigDecimal("1"), Instant.parse("2026-01-01T10:00:00Z"), ""));
-		assertThrows(IllegalArgumentException.class, () -> new LecturaConsumo(
-				new BigDecimal("1"), Instant.parse("2026-01-01T10:00:00Z"), "   "));
+	void rechazaMedidorIdNulo() {
+		assertThrows(NullPointerException.class, () -> new LecturaConsumo(
+				new BigDecimal("1"), Instant.parse("2026-01-01T10:00:00Z"), null));
 	}
 
 	@Test
@@ -55,6 +53,6 @@ class LecturaConsumoTest {
 
 	private static LecturaConsumo crearLectura(String valor) {
 		return new LecturaConsumo(
-				new BigDecimal(valor), Instant.parse("2026-01-01T10:00:00Z"), "M-001");
+				new BigDecimal(valor), Instant.parse("2026-01-01T10:00:00Z"), 1L);
 	}
 }

@@ -26,7 +26,7 @@ public final class DetectarAnomaliaApplicationService implements DetectarAnomali
 	}
 
 	@Override
-	public ResultadoDeteccion detectar(String medidorId, LecturaConsumo nuevaLectura) {
+	public ResultadoDeteccion detectar(Long medidorId, LecturaConsumo nuevaLectura) {
 		Objects.requireNonNull(medidorId, "El id del medidor es obligatorio");
 		Objects.requireNonNull(nuevaLectura, "La nueva lectura es obligatoria");
 		Medidor medidor = medidorRepository.buscarPorId(medidorId)

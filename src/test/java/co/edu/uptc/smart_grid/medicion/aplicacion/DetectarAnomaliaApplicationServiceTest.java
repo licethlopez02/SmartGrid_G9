@@ -23,27 +23,27 @@ class DetectarAnomaliaApplicationServiceTest {
 	@Test
 	void detectaAnomaliaYGuardaLaNuevaLecturaUsandoFake() {
 		FakeMedidorRepository fake = new FakeMedidorRepository();
-		Medidor medidor = MedidorFactory.crear("M-001", "Casa 1");
+		Medidor medidor = MedidorFactory.crear(1L, "Casa 1");
 		medidor.registrarLectura(lectura("10", 0));
 		fake.guardar(medidor);
 
 		DetectarAnomaliaApplicationService casoDeUso = new DetectarAnomaliaApplicationService(fake);
-		ResultadoDeteccion resultado = casoDeUso.detectar("M-001", lectura("30", 1));
+		ResultadoDeteccion resultado = casoDeUso.detectar(1L, lectura("30", 1));
 
 		assertTrue(resultado.esAnomalia());
-		assertEquals(2, fake.buscarPorId("M-001").orElseThrow().historialLecturas().size());
+		assertEquals(2, fake.buscarPorId(1L).orElseThrow().historialLecturas().size());
 	}
 
 	private static LecturaConsumo lectura(String valor, long segundo) {
 		return new LecturaConsumo(new BigDecimal(valor),
-				Instant.parse("2026-01-01T10:00:00Z").plusSeconds(segundo), "M-001");
+				Instant.parse("2026-01-01T10:00:00Z").plusSeconds(segundo), 1L);
 	}
 
 	private static final class FakeMedidorRepository implements MedidorRepositoryPort {
-		private final Map<String, Medidor> medidores = new HashMap<>();
+		private final Map<Long, Medidor> medidores = new HashMap<>();
 
 		@Override
-		public Optional<Medidor> buscarPorId(String medidorId) {
+		public Optional<Medidor> buscarPorId(Long medidorId) {
 			return Optional.ofNullable(medidores.get(medidorId));
 		}
 
