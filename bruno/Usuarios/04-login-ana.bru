@@ -1,0 +1,42 @@
+meta {
+  name: 04 - Login de Ana (200)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "{{correoAna}}",
+    "contrasena": "{{contrasenaAna}}"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    bru.setEnvVar("tokenUsuario", res.getBody().token);
+  }
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("devuelve un token Bearer", function () {
+    expect(res.getBody().token).to.be.a("string").and.not.empty;
+    expect(res.getBody().tipo).to.equal("Bearer");
+  });
+}
+
+docs {
+  Guarda el token en la variable tokenUsuario del entorno.
+}

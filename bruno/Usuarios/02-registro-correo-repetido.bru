@@ -1,0 +1,32 @@
+meta {
+  name: 02 - Registro con correo repetido (409)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/registro
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "nombre": "Ana Perez",
+    "correo": "{{correoAna}}",
+    "contrasena": "{{contrasenaAna}}"
+  }
+}
+
+tests {
+  test("responde 409", function () {
+    expect(res.getStatus()).to.equal(409);
+  });
+  test("el mensaje indica que el correo ya esta registrado", function () {
+    expect(res.getBody().mensaje).to.include("registrado");
+  });
+}

@@ -1,0 +1,36 @@
+meta {
+  name: 15 - Cambiar mi contrasena (204)
+  type: http
+  seq: 17
+}
+
+put {
+  url: {{baseUrl}}/api/usuarios/me/contrasena
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{tokenUsuario}}
+}
+
+body:json {
+  {
+    "contrasenaActual": "{{contrasenaAna}}",
+    "contrasenaNueva": "nuevaClave99"
+  }
+}
+
+tests {
+  test("responde 204", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+}
+
+docs {
+  Se ejecuta despues de desactivar la cuenta (14a). Responde 204 porque el token emitido antes sigue siendo valido hasta expirar: es el limite conocido documentado en NOTAS.md.
+}

@@ -1,0 +1,21 @@
+meta {
+  name: 12b - Listar usuarios con el token de ambos roles (200)
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/api/usuarios
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAmbosRoles}}
+}
+
+tests {
+  test("responde 200: Ana ahora puede listar", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -1,0 +1,21 @@
+meta {
+  name: 08 - Listar usuarios con rol USUARIO (403)
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/usuarios
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenUsuario}}
+}
+
+tests {
+  test("responde 403", function () {
+    expect(res.getStatus()).to.equal(403);
+  });
+}

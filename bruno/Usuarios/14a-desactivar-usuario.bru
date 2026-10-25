@@ -1,0 +1,34 @@
+meta {
+  name: 14a - Desactivar la cuenta de Ana (200)
+  type: http
+  seq: 15
+}
+
+patch {
+  url: {{baseUrl}}/api/usuarios/{{usuarioId}}/estado
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{tokenOperador}}
+}
+
+body:json {
+  {
+    "activo": false
+  }
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("la cuenta queda inactiva", function () {
+    expect(res.getBody().activo).to.equal(false);
+  });
+}

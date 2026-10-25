@@ -1,0 +1,34 @@
+meta {
+  name: 11 - Asignar USUARIO y OPERADOR a Ana (200)
+  type: http
+  seq: 11
+}
+
+put {
+  url: {{baseUrl}}/api/usuarios/{{usuarioId}}/roles
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{tokenOperador}}
+}
+
+body:json {
+  {
+    "roles": ["USUARIO", "OPERADOR"]
+  }
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("Ana queda con ambos roles", function () {
+    expect(res.getBody().roles).to.have.members(["USUARIO", "OPERADOR"]);
+  });
+}

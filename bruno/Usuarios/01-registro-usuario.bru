@@ -1,0 +1,51 @@
+meta {
+  name: 01 - Registro de usuario (201)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/auth/registro
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "nombre": "Ana Perez",
+    "correo": "{{correoAna}}",
+    "contrasena": "{{contrasenaAna}}"
+  }
+}
+
+script:pre-request {
+  bru.setEnvVar("correoAna", "ana." + Date.now() + "@correo.com");
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("usuarioId", String(res.getBody().id));
+  }
+}
+
+tests {
+  test("responde 201", function () {
+    expect(res.getStatus()).to.equal(201);
+  });
+  test("el usuario nuevo solo tiene el rol USUARIO", function () {
+    expect(res.getBody().roles).to.eql(["USUARIO"]);
+  });
+  test("no devuelve la contrasena ni su hash", function () {
+    expect(res.getBody()).to.not.have.property("contrasena");
+    expect(res.getBody()).to.not.have.property("contrasenaHash");
+  });
+}
+
+docs {
+  Crea un usuario nuevo. El script previo genera un correo unico (ana.<timestamp>@correo.com) para poder repetir la coleccion sin recibir 409.
+  Si quieres un correo fijo para las capturas, borra el script pre-request y escribe el correo en la variable correoAna del entorno.
+}
