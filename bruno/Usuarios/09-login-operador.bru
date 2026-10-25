@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/api/auth/login
+  url: {{usuariosUrl}}/api/auth/login
   body: json
   auth: none
 }
@@ -16,8 +16,8 @@ headers {
 
 body:json {
   {
-    "correo": "{{correoOperador}}",
-    "contrasena": "{{contrasenaOperador}}"
+    "correo": "{{operadorCorreo}}",
+    "contrasena": "{{operadorContrasena}}"
   }
 }
 
