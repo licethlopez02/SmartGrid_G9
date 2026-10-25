@@ -1,0 +1,25 @@
+meta {
+  name: 06 - Mi perfil con token (200)
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{usuariosUrl}}/api/usuarios/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenUsuario}}
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("devuelve el perfil de Ana con rol USUARIO", function () {
+    expect(res.getBody().correo).to.equal(bru.getEnvVar("correoAna"));
+    expect(res.getBody().roles).to.eql(["USUARIO"]);
+  });
+}

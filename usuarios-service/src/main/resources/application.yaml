@@ -1,0 +1,19 @@
+server:
+  port: 8083
+spring:
+  application:
+    name: usuarios-service
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  docker:
+    compose:
+      skip:
+        in-tests: false
+jwt:
+  secret: ${JWT_SECRET:clave-de-desarrollo-smart-grid-g9-minimo-32-bytes}
+  expiracion-minutos: 60
+operador-inicial:
+  correo: ${OPERADOR_CORREO:operador@smartgrid.local}
+  contrasena: ${OPERADOR_CONTRASENA:Operador123!}

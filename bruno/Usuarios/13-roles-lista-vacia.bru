@@ -1,0 +1,31 @@
+meta {
+  name: 13 - Reemplazar roles por lista vacia (400)
+  type: http
+  seq: 14
+}
+
+put {
+  url: {{usuariosUrl}}/api/usuarios/{{usuarioId}}/roles
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{tokenOperador}}
+}
+
+body:json {
+  {
+    "roles": []
+  }
+}
+
+tests {
+  test("responde 400", function () {
+    expect(res.getStatus()).to.equal(400);
+  });
+}

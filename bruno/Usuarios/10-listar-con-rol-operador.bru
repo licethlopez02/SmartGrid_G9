@@ -1,0 +1,26 @@
+meta {
+  name: 10 - Listar usuarios con rol OPERADOR (200)
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{usuariosUrl}}/api/usuarios
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenOperador}}
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("la lista incluye a Ana y al operador", function () {
+    const correos = res.getBody().map(function (u) { return u.correo; });
+    expect(correos).to.include(bru.getEnvVar("correoAna"));
+    expect(correos).to.include(bru.getEnvVar("correoOperador"));
+  });
+}

@@ -1,0 +1,41 @@
+meta {
+  name: 09 - Login del operador inicial (200)
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{usuariosUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "{{operadorCorreo}}",
+    "contrasena": "{{operadorContrasena}}"
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    bru.setEnvVar("tokenOperador", res.getBody().token);
+  }
+}
+
+tests {
+  test("responde 200", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("devuelve un token Bearer", function () {
+    expect(res.getBody().token).to.be.a("string").and.not.empty;
+  });
+}
+
+docs {
+  Usa las variables correoOperador y contrasenaOperador del entorno (los valores por defecto del application.yaml). Guarda el token en tokenOperador.
+}
