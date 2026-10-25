@@ -1,4 +1,4 @@
-package co.edu.uptc.usuarios_service.dominio;
+package co.edu.uptc.usuarios_service.usuarios.dominio;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,11 +8,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-import co.edu.uptc.usuarios_service.usuarios.dominio.ReglaDeUsuarioException;
-import co.edu.uptc.usuarios_service.usuarios.dominio.TipoRol;
-import co.edu.uptc.usuarios_service.usuarios.dominio.Usuario;
-
-class UsuarioTest {
+public class UsuarioTest {
     @Test
     void unUsuarioPuedeTenerAmbosRoles() {
         Usuario u = new Usuario("Ana", "ana@correo.com", "hash", EnumSet.of(TipoRol.USUARIO));
