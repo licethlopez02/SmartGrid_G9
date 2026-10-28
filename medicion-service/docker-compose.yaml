@@ -1,0 +1,15 @@
+services:
+  medicion-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: medicion
+      POSTGRES_USER: medicion_user
+      POSTGRES_PASSWORD: medicion_pass
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medicion_user -d medicion"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+      start_period: 5s

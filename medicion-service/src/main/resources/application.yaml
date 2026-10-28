@@ -1,0 +1,18 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: medicion-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/medicion
+    username: medicion_user
+    password: medicion_pass
+    driver-class-name: org.postgresql.Driver
+  docker:
+    compose:
+      skip:
+        in-tests: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
