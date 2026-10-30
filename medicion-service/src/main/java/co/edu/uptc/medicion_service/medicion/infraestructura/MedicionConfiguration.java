@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import co.edu.uptc.medicion_service.medicion.aplicacion.puerto.salida.MedidorRepositoryPort;
+import co.edu.uptc.medicion_service.medicion.aplicacion.puerto.salida.PublicadorEventos;
 import co.edu.uptc.medicion_service.medicion.aplicacion.servicio.DetectarAnomaliaApplicationService;
 import co.edu.uptc.medicion_service.medicion.aplicacion.servicio.ConsultarMedicionApplicationService;
 import co.edu.uptc.medicion_service.medicion.aplicacion.servicio.RegistrarMedidorApplicationService;
@@ -19,8 +20,8 @@ public class MedicionConfiguration {
 
 	@Bean
 	public RegistrarMedidorApplicationService registrarMedidorApplicationService(
-			MedidorRepositoryPort medidorRepository) {
-		return new RegistrarMedidorApplicationService(medidorRepository);
+			MedidorRepositoryPort medidorRepository, PublicadorEventos publicadorEventos) {
+		return new RegistrarMedidorApplicationService(medidorRepository, publicadorEventos);
 	}
 
 	@Bean
