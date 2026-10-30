@@ -16,3 +16,8 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: false
+  grpc:
+    client:
+      channel:
+        medicion:
+          target: static://localhost:9090

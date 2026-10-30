@@ -16,7 +16,7 @@ public class FacturaServiceConFalsoTest {
         RepositorioFacturasFalso repositorio = new RepositorioFacturasFalso();
         GeneracionFacturaService generacionFacturaService = new GeneracionFacturaService();
         FacturaFactory factory = new FacturaFactory(repositorio, generacionFacturaService);
-        FacturaService service = new FacturaService(repositorio, factory);
+        FacturaService service = new FacturaService(repositorio, factory, new VerificadorMedidorFalso());
 
         TarifaVigente tarifa = new TarifaVigente(new BigDecimal("850"), LocalDate.of(2026, 1, 1), null);
 
