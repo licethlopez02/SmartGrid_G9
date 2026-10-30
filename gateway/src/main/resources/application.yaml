@@ -1,0 +1,28 @@
+server:
+  port: 8000
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: medicion-route
+              uri: lb://medicion-service
+              predicates:
+                - Path=/api/medidores/**
+            - id: facturacion-route
+              uri: lb://facturacion-service
+              predicates:
+                - Path=/api/facturas/**
+            - id: usuarios-route
+              uri: lb://usuarios-service
+              predicates:
+                - Path=/api/auth/**,/api/usuarios/**
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
