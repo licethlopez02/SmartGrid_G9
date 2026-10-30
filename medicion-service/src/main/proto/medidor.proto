@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_package = "co.edu.uptc.medicion_service.grpc";
+option java_multiple_files = true;
+
+service MedidorGrpc {
+  rpc ExisteMedidor (ExisteMedidorRequest) returns (ExisteMedidorResponse) {}
+}
+
+message ExisteMedidorRequest {
+  int64 medidorId = 1;
+}
+
+message ExisteMedidorResponse {
+  bool existe = 1;
+}
