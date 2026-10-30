@@ -40,6 +40,9 @@ public class Factura {
     @Column(name = "fecha_generacion", nullable = false)
     private LocalDate fechaGeneracion;
 
+    @Column(name = "huerfana", nullable = false, columnDefinition = "boolean default false")
+    private boolean huerfana;
+
     protected Factura() {}
 
     public Factura(Long medidorId, LocalDate periodoInicio, LocalDate periodoFin,
@@ -104,5 +107,15 @@ public class Factura {
     }
 
     @Override
-    public int hashCode() { return getClass().hashCode(); }
+    public int hashCode() { 
+        return getClass().hashCode(); 
+    }
+
+    public boolean isHuerfana() {
+        return huerfana;
+    }
+
+    public void marcarComoHuerfana() {
+        this.huerfana = true;
+    }
 }
