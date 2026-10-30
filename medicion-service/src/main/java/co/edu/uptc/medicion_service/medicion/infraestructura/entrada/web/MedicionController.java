@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,9 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.edu.uptc.medicion_service.medicion.aplicacion.puerto.entrada.DetectarAnomaliaUseCase;
+import co.edu.uptc.medicion_service.medicion.aplicacion.puerto.entrada.EliminarMedidorUseCase;
 import co.edu.uptc.medicion_service.medicion.aplicacion.puerto.entrada.ConsultarMedicionUseCase;
 import co.edu.uptc.medicion_service.medicion.aplicacion.puerto.entrada.RegistrarMedidorUseCase;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @RestController
@@ -26,13 +29,16 @@ public class MedicionController {
 	private final DetectarAnomaliaUseCase detectarAnomalia;
 	private final RegistrarMedidorUseCase registrarMedidor;
 	private final ConsultarMedicionUseCase consultarMedicion;
+	private final EliminarMedidorUseCase eliminarMedidor;
 
 	public MedicionController(DetectarAnomaliaUseCase detectarAnomalia,
 			RegistrarMedidorUseCase registrarMedidor,
-			ConsultarMedicionUseCase consultarMedicion) {
+			ConsultarMedicionUseCase consultarMedicion,
+			EliminarMedidorUseCase eliminarMedidor) {
 		this.detectarAnomalia = detectarAnomalia;
 		this.registrarMedidor = registrarMedidor;
 		this.consultarMedicion = consultarMedicion;
+		this.eliminarMedidor = eliminarMedidor;
 	}
 
 	@PostMapping
@@ -86,5 +92,11 @@ public class MedicionController {
 		return consultarMedicion.consumoPorZona(zona, desde, hasta).stream()
 				.map(consumo -> new ConsumoZonaResponse(consumo.zona(), consumo.total()))
 				.toList();
+	}
+
+	@DeleteMapping("/{medidorId}")
+	public ResponseEntity<Void> eliminar(@PathVariable Long medidorId) {
+		eliminarMedidor.iniciarEliminacion(medidorId);
+		return ResponseEntity.accepted().build();
 	}
 }

@@ -14,4 +14,8 @@ public interface MedidorRepositoryPort {
 	}
 
 	Medidor guardar(Medidor medidor);
+
+	default void eliminar(Long medidorId) {
+		throw new UnsupportedOperationException();
+	}
 }

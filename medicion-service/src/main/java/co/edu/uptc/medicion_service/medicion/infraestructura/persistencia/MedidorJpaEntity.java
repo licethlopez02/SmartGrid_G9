@@ -28,13 +28,17 @@ public class MedidorJpaEntity {
 	@CollectionTable(name = "lecturas_consumo", joinColumns = @JoinColumn(name = "medidor_id"))
 	private List<LecturaJpaEmbeddable> lecturas = new ArrayList<>();
 
+	@Column(name = "estado", columnDefinition = "varchar(20) default 'ACTIVO'")
+	private String estado = "ACTIVO";
+
 	protected MedidorJpaEntity() {
 	}
 
-	public MedidorJpaEntity(String id, String ubicacion, List<LecturaJpaEmbeddable> lecturas) {
+	public MedidorJpaEntity(String id, String ubicacion, List<LecturaJpaEmbeddable> lecturas, String estado) {
 		this.id = id;
 		this.ubicacion = ubicacion;
 		this.lecturas = new ArrayList<>(lecturas);
+		this.estado = estado;
 	}
 
 	public String getId() {
@@ -47,6 +51,10 @@ public class MedidorJpaEntity {
 
 	public List<LecturaJpaEmbeddable> getLecturas() {
 		return List.copyOf(lecturas);
+	}
+
+	public String getEstado() {
+		return estado;
 	}
 }
 

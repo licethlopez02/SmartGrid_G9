@@ -13,6 +13,7 @@ public final class Medidor {
 	private final Long id;
 	private final String ubicacion;
 	private final List<LecturaConsumo> lecturas = new ArrayList<>();
+	private EstadoMedidor estado = EstadoMedidor.ACTIVO;
 
 	Medidor(Long id, String ubicacion) {
 		this.id = Objects.requireNonNull(id, "El id del medidor es obligatorio");
@@ -25,6 +26,18 @@ public final class Medidor {
 
 	public String ubicacion() {
 		return ubicacion;
+	}
+
+	public EstadoMedidor estado() {
+		return estado;
+	}
+
+	public boolean estaEnEliminacion() {
+		return estado == EstadoMedidor.EN_ELIMINACION;
+	}
+
+	public void marcarEnEliminacion() {
+		this.estado = EstadoMedidor.EN_ELIMINACION;
 	}
 
 	public List<LecturaConsumo> historialLecturas() {

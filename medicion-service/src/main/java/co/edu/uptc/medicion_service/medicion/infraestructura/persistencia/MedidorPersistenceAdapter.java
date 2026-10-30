@@ -40,12 +40,16 @@ public class MedidorPersistenceAdapter implements MedidorRepositoryPort {
 		return medidor;
 	}
 
-	private Medidor toDomain(MedidorJpaEntity entity) {
+		private Medidor toDomain(MedidorJpaEntity entity) {
 		List<LecturaConsumo> lecturas = entity.getLecturas().stream()
 				.map(lectura -> new LecturaConsumo(
 						lectura.getValor(), lectura.getTimestamp(), aLongId(lectura.getMedidorId())))
 				.toList();
-		return MedidorFactory.crearConHistorial(aLongId(entity.getId()), entity.getUbicacion(), lecturas);
+		Medidor medidor = MedidorFactory.crearConHistorial(aLongId(entity.getId()), entity.getUbicacion(), lecturas);
+		if ("EN_ELIMINACION".equals(entity.getEstado())) {
+			medidor.marcarEnEliminacion();
+		}
+		return medidor;
 	}
 
 	private MedidorJpaEntity toEntity(Medidor medidor) {
@@ -53,9 +57,16 @@ public class MedidorPersistenceAdapter implements MedidorRepositoryPort {
 				.map(lectura -> new LecturaJpaEmbeddable(
 						lectura.valor(), lectura.timestamp(), aDatabaseId(lectura.medidorId())))
 				.toList();
-		return new MedidorJpaEntity(aDatabaseId(medidor.id()), medidor.ubicacion(), lecturas);
+		return new MedidorJpaEntity(aDatabaseId(medidor.id()), medidor.ubicacion(), lecturas,
+				medidor.estado().name());
 	}
 
+	@Override
+	@Transactional
+	public void eliminar(Long medidorId) {
+		repository.deleteById(aDatabaseId(medidorId));
+	}
+	
 	private static Long aLongId(String id) {
 		String valor = id.startsWith("M-") ? id.substring(2) : id;
 		return Long.valueOf(valor);
