@@ -21,6 +21,11 @@ spring:
       channel:
         medicion:
           target: static://localhost:9090
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: facturacion-service
+      auto-offset-reset: earliest
 eureka:
   instance:
     prefer-ip-address: true
