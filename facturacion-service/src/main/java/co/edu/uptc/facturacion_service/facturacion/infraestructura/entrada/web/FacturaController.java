@@ -35,4 +35,9 @@ public class FacturaController {
     public List<FacturaResponse> listarPorMedidor(@RequestParam Long medidorId) {
         return facturaUseCase.listarPorMedidor(medidorId).stream().map(FacturaMapper::aResponse).toList();
     }
+
+    @PostMapping("/{id}/pago")
+    public FacturaResponse pagar(@PathVariable Long id) {
+        return FacturaMapper.aResponse(facturaUseCase.registrarPago(id));
+    }
 }

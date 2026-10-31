@@ -16,4 +16,5 @@ public interface FacturaUseCase {
     Factura buscarPorId(Long id);
 
     List<Factura> listarPorMedidor(Long medidorId);
+    Factura registrarPago(Long id);
 }

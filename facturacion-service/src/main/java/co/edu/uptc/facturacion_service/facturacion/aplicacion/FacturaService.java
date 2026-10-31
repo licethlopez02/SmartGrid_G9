@@ -42,6 +42,13 @@ public class FacturaService implements FacturaUseCase {
     }
 
     @Override
+    public Factura registrarPago(Long id) {
+        Factura factura = buscarPorId(id);
+        factura.registrarPago();
+        return repositorioFacturas.guardar(factura);
+    }
+
+    @Override
     public List<Factura> listarPorMedidor(Long medidorId) {
         return repositorioFacturas.listarPorMedidorId(medidorId);
     }

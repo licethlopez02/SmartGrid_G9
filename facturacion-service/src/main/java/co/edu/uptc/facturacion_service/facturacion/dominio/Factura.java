@@ -135,4 +135,11 @@ public class Factura {
         }
         return estado;
     }
+
+    public void registrarPago() {
+        if (estado == EstadoFactura.PAGADA) {
+            throw new FacturaYaPagadaException(id);
+        }
+        this.estado = EstadoFactura.PAGADA;
+    }
 }
