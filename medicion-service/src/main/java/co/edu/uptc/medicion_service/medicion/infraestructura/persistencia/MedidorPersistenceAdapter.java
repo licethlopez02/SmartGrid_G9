@@ -16,9 +16,12 @@ import co.edu.uptc.medicion_service.medicion.dominio.MedidorFactory;
 public class MedidorPersistenceAdapter implements MedidorRepositoryPort {
 
 	private final SpringDataMedidorRepository repository;
+	private final SpringDataLecturaRepository lecturasRepository;
 
-	public MedidorPersistenceAdapter(SpringDataMedidorRepository repository) {
+	public MedidorPersistenceAdapter(SpringDataMedidorRepository repository,
+			SpringDataLecturaRepository lecturasRepository) {
 		this.repository = Objects.requireNonNull(repository, "El repositorio Spring Data es obligatorio");
+		this.lecturasRepository = Objects.requireNonNull(lecturasRepository, "El repositorio de lecturas es obligatorio");
 	}
 
 	@Override
@@ -40,12 +43,27 @@ public class MedidorPersistenceAdapter implements MedidorRepositoryPort {
 		return medidor;
 	}
 
-		private Medidor toDomain(MedidorJpaEntity entity) {
-		List<LecturaConsumo> lecturas = entity.getLecturas().stream()
+	@Override
+	@Transactional(readOnly = true)
+	public boolean existeActivoPorUsuarioYPropiedad(Long usuarioId, String propiedad) {
+		return repository.existsByUsuarioIdAndPropiedadAndEstado(usuarioId, propiedad, "ACTIVO");
+	}
+
+	@Override
+	@Transactional
+	public void guardarLectura(LecturaConsumo lectura) {
+		Objects.requireNonNull(lectura, "La lectura es obligatoria");
+		lecturasRepository.save(new LecturaJpaEntity(aDatabaseId(lectura.medidorId()),
+				lectura.valor(), lectura.timestamp()));
+	}
+
+	private Medidor toDomain(MedidorJpaEntity entity) {
+		List<LecturaConsumo> lecturas = lecturasRepository.findByMedidorIdOrderByTimestampAsc(entity.getId()).stream()
 				.map(lectura -> new LecturaConsumo(
 						lectura.getValor(), lectura.getTimestamp(), aLongId(lectura.getMedidorId())))
 				.toList();
-		Medidor medidor = MedidorFactory.crearConHistorial(aLongId(entity.getId()), entity.getUbicacion(), lecturas);
+		Medidor medidor = MedidorFactory.crearConHistorial(aLongId(entity.getId()), entity.getUbicacion(),
+				entity.getUsuarioId(), entity.getPropiedad(), lecturas);
 		if ("EN_ELIMINACION".equals(entity.getEstado())) {
 			medidor.marcarEnEliminacion();
 		}
@@ -53,11 +71,8 @@ public class MedidorPersistenceAdapter implements MedidorRepositoryPort {
 	}
 
 	private MedidorJpaEntity toEntity(Medidor medidor) {
-		List<LecturaJpaEmbeddable> lecturas = medidor.historialLecturas().stream()
-				.map(lectura -> new LecturaJpaEmbeddable(
-						lectura.valor(), lectura.timestamp(), aDatabaseId(lectura.medidorId())))
-				.toList();
-		return new MedidorJpaEntity(aDatabaseId(medidor.id()), medidor.ubicacion(), lecturas,
+		return new MedidorJpaEntity(aDatabaseId(medidor.id()), medidor.ubicacion(), medidor.usuarioId(),
+				medidor.propiedad(),
 				medidor.estado().name());
 	}
 

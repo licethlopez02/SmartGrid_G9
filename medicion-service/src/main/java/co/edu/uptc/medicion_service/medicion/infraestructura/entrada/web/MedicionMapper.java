@@ -23,6 +23,6 @@ public final class MedicionMapper {
 
 	public static MedidorResponse aResponse(Medidor medidor) {
 		Objects.requireNonNull(medidor, "El medidor es obligatorio");
-		return new MedidorResponse(medidor.id(), medidor.ubicacion());
+		return new MedidorResponse(medidor.id(), medidor.ubicacion(), medidor.usuarioId(), medidor.propiedad());
 	}
 }

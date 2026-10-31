@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.List;
 
 import co.edu.uptc.medicion_service.medicion.dominio.Medidor;
+import co.edu.uptc.medicion_service.medicion.dominio.LecturaConsumo;
 
 public interface MedidorRepositoryPort {
 
@@ -13,7 +14,20 @@ public interface MedidorRepositoryPort {
 		return List.of();
 	}
 
+	default boolean existeActivoPorUsuarioYPropiedad(Long usuarioId, String propiedad) {
+		return listar().stream().anyMatch(m -> usuarioId != null && usuarioId.equals(m.usuarioId())
+				&& propiedad.equalsIgnoreCase(m.propiedad()) && !m.estaEnEliminacion());
+	}
+
 	Medidor guardar(Medidor medidor);
+
+	/**
+	 * Persists only the newly received reading. Implementations should not
+	 * rewrite the meter's complete history for every sample.
+	 */
+	default void guardarLectura(LecturaConsumo lectura) {
+		// In-memory adapters persist the aggregate in guardar(Medidor).
+	}
 
 	default void eliminar(Long medidorId) {
 		throw new UnsupportedOperationException();

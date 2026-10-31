@@ -5,6 +5,9 @@ option java_multiple_files = true;
 
 service MedidorGrpc {
   rpc ExisteMedidor (ExisteMedidorRequest) returns (ExisteMedidorResponse) {}
+  rpc ObtenerConsumo (ObtenerConsumoRequest) returns (ObtenerConsumoResponse) {}
+  rpc PeriodoCompleto (PeriodoCompletoRequest) returns (PeriodoCompletoResponse) {}
+  rpc AnomaliasNoResueltas (AnomaliasNoResueltasRequest) returns (AnomaliasNoResueltasResponse) {}
 }
 
 message ExisteMedidorRequest {
@@ -13,4 +16,44 @@ message ExisteMedidorRequest {
 
 message ExisteMedidorResponse {
   bool existe = 1;
+}
+
+message ObtenerConsumoRequest {
+  int64 medidorId = 1;
+  string desde = 2;
+  string hasta = 3;
+}
+
+message ObtenerConsumoResponse {
+  string consumo = 1;
+  bool periodoCompleto = 2;
+  int32 cantidadLecturas = 3;
+}
+
+message PeriodoCompletoRequest {
+  int64 medidorId = 1;
+  string desde = 2;
+  string hasta = 3;
+}
+
+message PeriodoCompletoResponse {
+  bool completo = 1;
+}
+
+message AnomaliasNoResueltasRequest {
+  int64 medidorId = 1;
+  string desde = 2;
+  string hasta = 3;
+}
+
+message AnomaliaGrpc {
+  int64 id = 1;
+  string valor = 2;
+  string timestamp = 3;
+  string razon = 4;
+  bool resuelta = 5;
+}
+
+message AnomaliasNoResueltasResponse {
+  repeated AnomaliaGrpc anomalias = 1;
 }

@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 
 import co.edu.uptc.medicion_service.medicion.aplicacion.puerto.salida.MedidorRepositoryPort;
 import co.edu.uptc.medicion_service.medicion.aplicacion.puerto.salida.PublicadorEventos;
+import co.edu.uptc.medicion_service.medicion.aplicacion.puerto.salida.VerificadorUsuario;
 import co.edu.uptc.medicion_service.medicion.aplicacion.servicio.DetectarAnomaliaApplicationService;
 import co.edu.uptc.medicion_service.medicion.aplicacion.servicio.EliminarMedidorApplicationService;
 import co.edu.uptc.medicion_service.medicion.aplicacion.servicio.ConsultarMedicionApplicationService;
@@ -15,20 +16,26 @@ public class MedicionConfiguration {
 
 	@Bean
 	public DetectarAnomaliaApplicationService detectarAnomaliaApplicationService(
-			MedidorRepositoryPort medidorRepository) {
-		return new DetectarAnomaliaApplicationService(medidorRepository);
+			MedidorRepositoryPort medidorRepository,
+			co.edu.uptc.medicion_service.medicion.aplicacion.puerto.salida.AnomaliaRepositoryPort anomaliaRepository,
+			PublicadorEventos publicadorEventos) {
+		return new DetectarAnomaliaApplicationService(medidorRepository,
+				new co.edu.uptc.medicion_service.medicion.dominio.DeteccionAnomaliaService(),
+				anomaliaRepository, publicadorEventos);
 	}
 
 	@Bean
 	public RegistrarMedidorApplicationService registrarMedidorApplicationService(
-			MedidorRepositoryPort medidorRepository, PublicadorEventos publicadorEventos) {
-		return new RegistrarMedidorApplicationService(medidorRepository, publicadorEventos);
+			MedidorRepositoryPort medidorRepository, PublicadorEventos publicadorEventos,
+			VerificadorUsuario verificadorUsuario) {
+		return new RegistrarMedidorApplicationService(medidorRepository, publicadorEventos, verificadorUsuario);
 	}
 
 	@Bean
 	public ConsultarMedicionApplicationService consultarMedicionApplicationService(
-			MedidorRepositoryPort medidorRepository) {
-		return new ConsultarMedicionApplicationService(medidorRepository);
+			MedidorRepositoryPort medidorRepository,
+			co.edu.uptc.medicion_service.medicion.aplicacion.puerto.salida.AnomaliaRepositoryPort anomaliaRepository) {
+		return new ConsultarMedicionApplicationService(medidorRepository, anomaliaRepository);
 	}
 
 	@Bean

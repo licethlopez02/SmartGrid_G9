@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option java_package = "co.edu.uptc.usuarios_service.grpc";
+option java_multiple_files = true;
+
+service UsuarioGrpc {
+  rpc ExisteUsuarioActivo (ExisteUsuarioActivoRequest) returns (ExisteUsuarioActivoResponse) {}
+}
+
+message ExisteUsuarioActivoRequest {
+  int64 usuarioId = 1;
+}
+
+message ExisteUsuarioActivoResponse {
+  bool existe = 1;
+  bool activo = 2;
+}

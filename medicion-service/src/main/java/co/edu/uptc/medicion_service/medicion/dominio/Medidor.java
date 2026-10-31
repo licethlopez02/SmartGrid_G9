@@ -12,12 +12,20 @@ public final class Medidor {
 
 	private final Long id;
 	private final String ubicacion;
+	private final Long usuarioId;
+	private final String propiedad;
 	private final List<LecturaConsumo> lecturas = new ArrayList<>();
 	private EstadoMedidor estado = EstadoMedidor.ACTIVO;
 
 	Medidor(Long id, String ubicacion) {
+		this(id, ubicacion, null, ubicacion);
+	}
+
+	Medidor(Long id, String ubicacion, Long usuarioId, String propiedad) {
 		this.id = Objects.requireNonNull(id, "El id del medidor es obligatorio");
 		this.ubicacion = validarTexto(ubicacion, "La ubicación");
+		this.usuarioId = usuarioId;
+		this.propiedad = validarTexto(propiedad == null ? ubicacion : propiedad, "La propiedad");
 	}
 
 	public Long id() {
@@ -26,6 +34,14 @@ public final class Medidor {
 
 	public String ubicacion() {
 		return ubicacion;
+	}
+
+	public Long usuarioId() {
+		return usuarioId;
+	}
+
+	public String propiedad() {
+		return propiedad;
 	}
 
 	public EstadoMedidor estado() {
@@ -64,6 +80,24 @@ public final class Medidor {
 			}
 		}
 		lecturas.add(lectura);
+	}
+
+	/**
+	 * Adds a reading while keeping the history ordered.  Readings can arrive
+	 * late from a meter, so this operation intentionally does not reject an
+	 * older timestamp.
+	 */
+	public void registrarLecturaFueraDeOrden(LecturaConsumo lectura) {
+		Objects.requireNonNull(lectura, "La lectura es obligatoria");
+		if (!id.equals(lectura.medidorId())) {
+			throw new IllegalArgumentException("La lectura pertenece a otro medidor");
+		}
+		int posicion = 0;
+		while (posicion < lecturas.size()
+				&& !lecturas.get(posicion).timestamp().isAfter(lectura.timestamp())) {
+			posicion++;
+		}
+		lecturas.add(posicion, lectura);
 	}
 
 	private static String validarTexto(String valor, String nombre) {

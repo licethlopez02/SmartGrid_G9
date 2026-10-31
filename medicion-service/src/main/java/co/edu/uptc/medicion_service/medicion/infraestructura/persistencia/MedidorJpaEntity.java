@@ -1,21 +1,15 @@
 package co.edu.uptc.medicion_service.medicion.infraestructura.persistencia;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "medidores")
+@Table(name = "medidores", uniqueConstraints = @UniqueConstraint(
+		name = "uk_medidor_propiedad_estado", columnNames = {"propiedad", "estado"}))
 public class MedidorJpaEntity {
 
 	@Id
@@ -24,9 +18,11 @@ public class MedidorJpaEntity {
 	@Column(nullable = false)
 	private String ubicacion;
 
-	@ElementCollection
-	@CollectionTable(name = "lecturas_consumo", joinColumns = @JoinColumn(name = "medidor_id"))
-	private List<LecturaJpaEmbeddable> lecturas = new ArrayList<>();
+	@Column(name = "usuario_id")
+	private Long usuarioId;
+
+	@Column(name = "propiedad", nullable = false)
+	private String propiedad;
 
 	@Column(name = "estado", columnDefinition = "varchar(20) default 'ACTIVO'")
 	private String estado = "ACTIVO";
@@ -34,10 +30,11 @@ public class MedidorJpaEntity {
 	protected MedidorJpaEntity() {
 	}
 
-	public MedidorJpaEntity(String id, String ubicacion, List<LecturaJpaEmbeddable> lecturas, String estado) {
+	public MedidorJpaEntity(String id, String ubicacion, Long usuarioId, String propiedad, String estado) {
 		this.id = id;
 		this.ubicacion = ubicacion;
-		this.lecturas = new ArrayList<>(lecturas);
+		this.usuarioId = usuarioId;
+		this.propiedad = propiedad;
 		this.estado = estado;
 	}
 
@@ -49,45 +46,10 @@ public class MedidorJpaEntity {
 		return ubicacion;
 	}
 
-	public List<LecturaJpaEmbeddable> getLecturas() {
-		return List.copyOf(lecturas);
-	}
-
 	public String getEstado() {
 		return estado;
 	}
-}
 
-@Embeddable
-class LecturaJpaEmbeddable {
-
-	@Column(name = "valor", nullable = false)
-	private BigDecimal valor;
-
-	@Column(name = "timestamp", nullable = false)
-	private Instant timestamp;
-
-	@Column(name = "lectura_medidor_id", nullable = false)
-	private String medidorId;
-
-	protected LecturaJpaEmbeddable() {
-	}
-
-	LecturaJpaEmbeddable(BigDecimal valor, Instant timestamp, String medidorId) {
-		this.valor = valor;
-		this.timestamp = timestamp;
-		this.medidorId = medidorId;
-	}
-
-	public BigDecimal getValor() {
-		return valor;
-	}
-
-	public Instant getTimestamp() {
-		return timestamp;
-	}
-
-	public String getMedidorId() {
-		return medidorId;
-	}
+	public Long getUsuarioId() { return usuarioId; }
+	public String getPropiedad() { return propiedad; }
 }
