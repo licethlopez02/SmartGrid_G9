@@ -8,6 +8,8 @@ import java.time.LocalDate;
 @Table(name = "facturas")
 public class Factura {
 
+    public static final int DIAS_PARA_VENCER = 15;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,6 +42,9 @@ public class Factura {
     @Column(name = "fecha_generacion", nullable = false)
     private LocalDate fechaGeneracion;
 
+    @Column(name = "fecha_vencimiento")
+    private LocalDate fechaVencimiento;
+
     @Column(name = "huerfana", nullable = false, columnDefinition = "boolean default false")
     private boolean huerfana;
 
@@ -54,6 +59,7 @@ public class Factura {
         this.tarifaAplicada = tarifaAplicada;
         this.montoTotal = consumoAcumuladoKwh.multiply(tarifaAplicada.valor());
         this.fechaGeneracion = fechaGeneracion;
+        this.fechaVencimiento = fechaGeneracion.plusDays(DIAS_PARA_VENCER);
         this.estado = EstadoFactura.PENDIENTE;
     }
 
@@ -117,5 +123,16 @@ public class Factura {
 
     public void marcarComoHuerfana() {
         this.huerfana = true;
+    }
+
+    public LocalDate getFechaVencimiento() {
+        return fechaVencimiento;
+    }
+
+    public EstadoFactura estadoActual(LocalDate hoy) {
+        if (estado == EstadoFactura.PENDIENTE && fechaVencimiento != null && hoy.isAfter(fechaVencimiento)) {
+            return EstadoFactura.VENCIDA;
+        }
+        return estado;
     }
 }

@@ -6,5 +6,10 @@ import java.time.LocalDate;
 
 public record FacturaResponse(
     Long id, Long medidorId, LocalDate periodoInicio, LocalDate periodoFin,
-    BigDecimal montoTotal, EstadoFactura estado
-) {}
+    BigDecimal montoTotal, EstadoFactura estado,
+    BigDecimal consumoAcumuladoKwh, BigDecimal tarifaValor,
+    LocalDate tarifaVigenciaDesde, LocalDate tarifaVigenciaHasta,
+    LocalDate fechaGeneracion, LocalDate fechaVencimiento
+) {
+
+}
