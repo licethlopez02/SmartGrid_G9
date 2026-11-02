@@ -32,3 +32,5 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
+jwt:
+  secret: ${JWT_SECRET:clave-de-desarrollo-smart-grid-g9-minimo-32-bytes}
