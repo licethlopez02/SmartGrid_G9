@@ -1,6 +1,7 @@
 package co.edu.uptc.facturacion_service.facturacion.infraestructura.entrada.web;
 
 import co.edu.uptc.facturacion_service.facturacion.aplicacion.FacturaUseCase;
+import co.edu.uptc.facturacion_service.facturacion.aplicacion.FacturarPeriodoUseCase;
 import co.edu.uptc.facturacion_service.facturacion.dominio.Factura;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -12,18 +13,18 @@ import java.util.List;
 public class FacturaController {
 
     private final FacturaUseCase facturaUseCase;
+    private final FacturarPeriodoUseCase facturarPeriodo;
 
-    public FacturaController(FacturaUseCase facturaUseCase) {
+    public FacturaController(FacturaUseCase facturaUseCase, FacturarPeriodoUseCase facturarPeriodo) {
         this.facturaUseCase = facturaUseCase;
+        this.facturarPeriodo = facturarPeriodo;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public FacturaResponse generar(@RequestBody FacturaRequest request) {
-        Factura factura = facturaUseCase.generarFactura(request.medidorId(), request.periodoInicio(),
-            request.periodoFin(), request.consumoAcumuladoKwh(), request.periodoCompleto(),
-            FacturaMapper.aTarifaVigente(request));
-        return FacturaMapper.aResponse(factura);
+        return FacturaMapper.aResponse(facturarPeriodo.generarFacturaDelPeriodo(
+            request.medidorId(), request.periodoInicio(), request.periodoFin()));
     }
 
     @GetMapping("/{id}")

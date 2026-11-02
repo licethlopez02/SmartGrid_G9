@@ -3,6 +3,8 @@ package co.edu.uptc.facturacion_service.facturacion.dominio;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "facturas")
@@ -48,7 +50,16 @@ public class Factura {
     @Column(name = "huerfana", nullable = false, columnDefinition = "boolean default false")
     private boolean huerfana;
 
-    protected Factura() {}
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "factura_anomalias", joinColumns = @JoinColumn(name = "factura_id"))
+    private List<AnomaliaFacturada> anomaliasNoResueltas = new ArrayList<>();
+
+    @Column(name = "fecha_pago")
+    private LocalDate fechaPago;
+
+    protected Factura() {
+
+    }
 
     public Factura(Long medidorId, LocalDate periodoInicio, LocalDate periodoFin,
             BigDecimal consumoAcumuladoKwh, TarifaVigente tarifaAplicada, LocalDate fechaGeneracion) {
@@ -137,9 +148,27 @@ public class Factura {
     }
 
     public void registrarPago() {
+        registrarPago(LocalDate.now());
+    }
+
+    public void registrarPago(LocalDate fecha) {
         if (estado == EstadoFactura.PAGADA) {
             throw new FacturaYaPagadaException(id);
         }
         this.estado = EstadoFactura.PAGADA;
+        this.fechaPago = fecha;
+    }
+
+    public List<AnomaliaFacturada> getAnomaliasNoResueltas() {
+        return List.copyOf(anomaliasNoResueltas);
+    }
+
+    public LocalDate getFechaPago() {
+        return fechaPago;
+    }
+
+    public void incluirAnomalias(List<AnomaliaFacturada> anomalias) {
+        this.anomaliasNoResueltas.clear();
+        this.anomaliasNoResueltas.addAll(anomalias);
     }
 }

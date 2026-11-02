@@ -1,0 +1,29 @@
+meta {
+  name: Prueba token copy
+  type: http
+  seq: 12
+}
+
+post {
+  url: http://localhost:8081/api/tarifas
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenOP}}
+}
+
+body:json {
+    {
+      "valor": 850,
+      "vigenciaDesde": "2026-01-01",
+      "vigenciaHasta": null
+    }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+  forwardAuthorizationHeader: false
+}

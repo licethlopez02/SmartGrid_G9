@@ -1,0 +1,20 @@
+meta {
+  name: Prueba token
+  type: http
+  seq: 10
+}
+
+get {
+  url: http://localhost:8081/api/facturas?medidorId=1
+  body: none
+  auth: inherit
+}
+
+params:query {
+  medidorId: 1
+}
+
+settings {
+  encodeUrl: true
+  forwardAuthorizationHeader: false
+}
