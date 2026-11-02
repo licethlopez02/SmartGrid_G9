@@ -4,7 +4,9 @@ import co.edu.uptc.facturacion_service.grpc.MedidorGrpcGrpc.MedidorGrpcBlockingS
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.grpc.client.ImportGrpcClients;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableScheduling
 @SpringBootApplication
 @ImportGrpcClients(target = "medicion", types = MedidorGrpcBlockingStub.class)
 public class FacturacionServiceApplication {
