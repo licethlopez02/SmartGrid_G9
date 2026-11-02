@@ -26,4 +26,10 @@ public record TarifaVigente(BigDecimal valor, LocalDate vigenciaDesde, LocalDate
         boolean noFinalizada = vigenciaHasta == null || !fecha.isAfter(vigenciaHasta);
         return yaIniciada && noFinalizada;
     }
+
+    public boolean seSuperponeCon(TarifaVigente otra) {
+        boolean estaTermina = vigenciaHasta == null || !vigenciaHasta.isBefore(otra.vigenciaDesde);
+        boolean otraTermina = otra.vigenciaHasta == null || !otra.vigenciaHasta.isBefore(vigenciaDesde);
+        return estaTermina && otraTermina;
+    }
 }
