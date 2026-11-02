@@ -1,5 +1,6 @@
 package co.edu.uptc.facturacion_service.facturacion.infraestructura.entrada.mensajeria;
 
+import co.edu.uptc.facturacion_service.facturacion.aplicacion.SincronizacionMedidoresService;
 import co.edu.uptc.facturacion_service.facturacion.dominio.Factura;
 import co.edu.uptc.facturacion_service.facturacion.infraestructura.salida.persistencia.FacturaRepository;
 import org.slf4j.Logger;
@@ -18,13 +19,16 @@ public class MedidorEnEliminacionListener {
     private static final Logger log = LoggerFactory.getLogger(MedidorEnEliminacionListener.class);
 
     private final FacturaRepository facturaRepository;
+    private final SincronizacionMedidoresService sincronizacion;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
     public MedidorEnEliminacionListener(FacturaRepository facturaRepository,
+                                        SincronizacionMedidoresService sincronizacion,
                                         KafkaTemplate<String, String> kafkaTemplate,
                                         ObjectMapper objectMapper) {
         this.facturaRepository = facturaRepository;
+        this.sincronizacion = sincronizacion;
         this.kafkaTemplate = kafkaTemplate;
         this.objectMapper = objectMapper;
     }
@@ -32,6 +36,8 @@ public class MedidorEnEliminacionListener {
     @KafkaListener(topics = "medidores.en-eliminacion")
     public void alIniciarseEliminacion(String mensaje) {
         long medidorId = objectMapper.readTree(mensaje).get("medidorId").longValue();
+
+        sincronizacion.desactivar(medidorId);
 
         List<Factura> facturas = facturaRepository.findByMedidorId(medidorId);
         facturas.forEach(Factura::marcarComoHuerfana);
