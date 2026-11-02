@@ -20,6 +20,10 @@ spring:
               uri: lb://usuarios-service
               predicates:
                 - Path=/api/auth/**,/api/usuarios/**
+            - id: facturacion-route
+              uri: lb://facturacion-service
+              predicates:
+                - Path=/api/facturas/**,/api/tarifas/**
 eureka:
   instance:
     prefer-ip-address: true
