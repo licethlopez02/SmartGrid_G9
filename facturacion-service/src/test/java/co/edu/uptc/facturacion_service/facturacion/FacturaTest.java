@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FacturaTest {
@@ -52,5 +53,19 @@ class FacturaTest {
         Factura factura = nuevaFactura();
         factura.registrarPago();
         assertThrows(FacturaYaPagadaException.class, factura::registrarPago);
+    }
+
+    @Test
+    void registrarPagoGuardaLaFechaDePago() {
+        Factura factura = nuevaFactura();
+        LocalDate fecha = LocalDate.of(2026, 10, 10);
+        factura.registrarPago(fecha);
+        assertEquals(fecha, factura.getFechaPago());
+        assertEquals(EstadoFactura.PAGADA, factura.getEstado());
+    }
+
+    @Test
+    void unaFacturaNuevaNoTieneFechaDePago() {
+        assertNull(nuevaFactura().getFechaPago());
     }
 }
