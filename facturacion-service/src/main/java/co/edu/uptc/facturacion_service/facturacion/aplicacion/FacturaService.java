@@ -52,4 +52,9 @@ public class FacturaService implements FacturaUseCase {
     public List<Factura> listarPorMedidor(Long medidorId) {
         return repositorioFacturas.listarPorMedidorId(medidorId);
     }
+
+    @Override
+    public List<Factura> listarPorMedidores(List<Long> medidorIds) {
+        return repositorioFacturas.listarPorMedidorIds(medidorIds);
+    }
 }

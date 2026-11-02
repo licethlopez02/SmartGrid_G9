@@ -15,4 +15,8 @@ public interface RepositorioFacturas {
     boolean existePorMedidorYPeriodo(Long medidorId, LocalDate periodoInicio, LocalDate periodoFin);
 
     Factura guardar(Factura factura);
+
+    default List<Factura> listarPorMedidorIds(List<Long> medidorIds) {
+        return medidorIds.stream().flatMap(id -> listarPorMedidorId(id).stream()).toList();
+    }
 }

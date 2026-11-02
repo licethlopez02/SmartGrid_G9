@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import co.edu.uptc.facturacion_service.facturacion.aplicacion.ServicioNoDisponibleException;
+import co.edu.uptc.facturacion_service.facturacion.dominio.AccesoDenegadoException;
 import co.edu.uptc.facturacion_service.facturacion.dominio.MedidorNoExisteException;
 
 @RestControllerAdvice
@@ -29,5 +30,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ServicioNoDisponibleException.class)
     public ResponseEntity<ErrorResponse> manejarServicioNoDisponible(ServicioNoDisponibleException ex) {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ErrorResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(AccesoDenegadoException.class)
+    public ResponseEntity<ErrorResponse> manejarAccesoDenegado(AccesoDenegadoException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(ex.getMessage()));
     }
 }
