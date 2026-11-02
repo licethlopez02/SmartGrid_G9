@@ -15,6 +15,9 @@ spring:
     compose:
       skip:
         in-tests: false
+  grpc:
+    server:
+      port: 9091
 jwt:
   secret: ${JWT_SECRET:clave-de-desarrollo-smart-grid-g9-minimo-32-bytes}
   expiracion-minutos: 60
