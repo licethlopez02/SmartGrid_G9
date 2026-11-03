@@ -138,8 +138,8 @@ public class MedicionController {
 	}
 
 	@DeleteMapping("/{medidorId}")
-	public ResponseEntity<Void> eliminar(@PathVariable Long medidorId) {
-		eliminarMedidor.iniciarEliminacion(medidorId);
+	@PreAuthorize("hasRole('OPERADOR')")
+	public ResponseEntity<Void> eliminar(@PathVariable Long medidorId) {	eliminarMedidor.iniciarEliminacion(medidorId);
 		return ResponseEntity.accepted().build();
 	}
 
