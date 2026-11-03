@@ -11,19 +11,15 @@ spring:
             - id: medicion-route
               uri: lb://medicion-service
               predicates:
-                - Path=/api/medidores/**
-            - id: facturacion-route
-              uri: lb://facturacion-service
-              predicates:
-                - Path=/api/facturas/**
-            - id: usuarios-route
-              uri: lb://usuarios-service
-              predicates:
-                - Path=/api/auth/**,/api/usuarios/**
+                - Path=/api/medidores/**,/api/anomalias/**
             - id: facturacion-route
               uri: lb://facturacion-service
               predicates:
                 - Path=/api/facturas/**,/api/tarifas/**
+            - id: usuarios-route
+              uri: lb://usuarios-service
+              predicates:
+                - Path=/api/auth/**,/api/usuarios/**
 eureka:
   instance:
     prefer-ip-address: true
