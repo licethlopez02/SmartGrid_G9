@@ -67,3 +67,56 @@ La relación que justifica la comunicación es **facturación → medición**: u
 - No hay compensación por timeout: si la Saga se atasca, el medidor queda en `EN_ELIMINACION` indefinidamente. Es el reto opcional del taller.
 - `medidores.registrados` solo se registra en el log de facturación; todavía no dispara ninguna acción de negocio.
 - Con un grupo de consumidores nuevo y `auto-offset-reset: earliest` se reprocesan eventos viejos al reiniciar. No afecta el resultado.
+
+
+---
+
+# Parte 2 — Facturación completa los requisitos de su subdominio
+
+## Resumen
+
+Facturación pasó de recibir consumo, período completo y tarifa por el cuerpo de la petición a derivarlos: el consumo y el período completo llegan de medicion-service por gRPC, la tarifa es una entidad propia, y las anomalías no resueltas se guardan en la factura. Además se protegen los endpoints con el JWT de usuarios.
+
+## Cambios por servicio
+
+| Servicio | Cambio |
+|---|---|
+| usuarios-service | Servidor gRPC `UsuarioGrpc/ExisteUsuarioActivo` en el puerto 9091, que usa medición al registrar un medidor |
+| medicion-service | `GrpcSecurityConfig` con `permitAll`, para que el servidor gRPC del 9090 acepte llamadas entre servicios |
+| facturacion-service | JWT, medidores locales, tarifa, factura del período, facturación mensual, pago con fecha, "mis facturas" |
+| gateway | Ruta `/api/tarifas/**` hacia facturación |
+
+## Contrato de `POST /api/facturas`
+
+El cuerpo ahora pide solo `medidorId`, `periodoInicio` y `periodoFin`. Antes pedía también el consumo, `periodoCompleto` y los datos de la tarifa. `FacturaResponse` agrega `fechaPago` y `anomaliasNoResueltas`, además del detalle de consumo, tarifa y vencimiento de la parte anterior.
+
+## Endpoints de facturación
+
+| Método y ruta | Acceso |
+|---|---|
+| `POST /api/facturas` | OPERADOR |
+| `POST /api/facturas/mensual?mes=AAAA-MM` | OPERADOR |
+| `GET /api/facturas/mias` | Cualquier usuario autenticado |
+| `GET /api/facturas/{id}` | OPERADOR o dueño del medidor |
+| `GET /api/facturas?medidorId=` | OPERADOR o dueño del medidor |
+| `POST /api/facturas/{id}/pago` | OPERADOR |
+| `POST /api/tarifas` | OPERADOR |
+| `GET /api/tarifas` | Cualquier usuario autenticado |
+
+## Reglas implementadas
+
+- **Período cerrado:** solo se factura si `periodoFin` es anterior a hoy.
+- **Factura única:** una por medidor y período.
+- **Período completo:** se deriva de medición. Si está incompleto, no se factura.
+- **Tarifa:** una sola tarifa vigente global. Se elige la que cubre `periodoFin`, la factura guarda una copia, y las vigencias no pueden superponerse.
+- **Vencimiento:** `fechaVencimiento` es la fecha de generación más 15 días. `VENCIDA` se calcula al consultar y no se guarda.
+- **Pago:** registrarlo guarda `fechaPago`. Una factura ya pagada responde 409.
+- **Anomalías:** las no resueltas del período se copian a la factura al generarla (regla 3).
+- **Mensual:** tarea programada el día 1 a las 02:00 (America/Bogota) para el mes anterior, más el endpoint manual. El resumen devuelve `generadas`, `duplicadas` y `rechazadas`.
+
+## Comunicación
+
+- **Consumo y anomalías:** gRPC hacia medición (`ObtenerConsumo`, `AnomaliasNoResueltas`). El adaptador tiene su propio Circuit Breaker, y un `INVALID_ARGUMENT` no cuenta como falla del circuito.
+- **Fechas hacia medición:** `desde` es 00:00:00Z de `periodoInicio` y `hasta` es 23:59:59Z de `periodoFin`, en UTC.
+- **Medidores locales:** la tabla `medidores_locales` se alimenta de `medidores.registrados` (con `usuarioId` si viene) y se desactiva con `medidores.en-eliminacion`. Con ella, facturación sabe de quién es cada medidor sin consultar a medición.
+- **Seguridad:** JWT HS256 con el secreto compartido `jwt.secret`. Se usan los claims `sub` (id del usuario) y `roles`.

@@ -70,3 +70,73 @@ Las capturas están en `evidencias/dev-2/comunicacion-microservicios/capturas`.
 | Kafka + Transactional Outbox | Hecho |
 | Saga | Hecho |
 | Verificación de punta a punta (Paso 8) | Hecho |
+
+
+---
+
+# Parte 2 — Facturación: requisitos pendientes
+
+**Rama:** `comunicacion-microservicios` (misma rama de la parte 1) · **Fecha:** 2 de noviembre de 2026
+**Alcance:** servidor gRPC de usuarios, validación de JWT en facturación, medidores locales por eventos, tarifa como entidad propia, factura del período con datos de medición, facturación mensual, pago con fecha, "mis facturas" y tests.
+
+## Tiempos por paso
+
+El tiempo registrado es el intervalo entre commits consecutivos. Incluye depuración.
+
+| Paso | Tema | Estimado en el taller | Registrado | Commit | Hora del commit |
+|---|---|---|---|---|---|
+| 0 + 1 | Preparación y servidor gRPC de usuarios (incluye el ajuste de seguridad gRPC en medición) | 10 + 25 min | [completa: el inicio de la sesión no tiene registro] | `9257263` (medicion), `d3416dc` (usuarios) | 2-nov 15:40 y 15:45 |
+| 2 | Validación de JWT en facturación | ~20 min | ~13 min | `4bbdfb6` | 2-nov 15:58 |
+| 3 | Medidores locales por eventos | ~25 min | ~22 min | `b5c5328` | 2-nov 16:20 |
+| 4 | Tarifa como entidad propia y ruta en el Gateway | ~25 min | ~32 min | `ac1c112`, `ce530a0` | 2-nov 16:51 |
+| 5 | Factura del período con datos de medición | ~50 min | ~38 min | `5d126e7` | 2-nov 17:30 |
+| 6 | Facturación mensual | ~20 min | ~15 min | `b365400` | 2-nov 17:45 |
+| 7 | Pago con fecha, "mis facturas" y acceso por rol | ~25 min | ~23 min | `f7dbcbc` | 2-nov 18:08 |
+| 8 | Tests | ~20 min | ~15 min | `7f33679` | 2-nov 18:22 |
+| 9 | Verificación de punta a punta | ~30 min | ~1 h 40 min (aprox., hasta las 20:03; incluye el reinicio de medición) | — | — |
+| 10 | Notas, bitácora  | ~10 min | 20 min | — | — |
+
+## Commits de la parte 2
+
+| Hash | Mensaje |
+|---|---|
+| `9257263` | fix(medicion): permitir las llamadas gRPC entre servicios sin autenticacion |
+| `d3416dc` | feat(usuarios): servidor gRPC ExisteUsuarioActivo en el puerto 9091 |
+| `4bbdfb6` | feat(facturacion): validacion de JWT con el secreto compartido de usuarios |
+| `b5c5328` | feat(facturacion): copia local de medidores a partir de los eventos de medicion |
+| `ac1c112` | feat(facturacion): tarifa como entidad propia con vigencias sin superposicion |
+| `ce530a0` | feat(gateway): ruta /api/tarifas hacia facturacion |
+| `5d126e7` | feat(facturacion): factura del periodo con consumo, periodo completo y anomalias desde medicion |
+| `b365400` | feat(facturacion): facturacion mensual programada para los medidores activos |
+| `f7dbcbc` | feat(facturacion): pago con fecha, mis facturas y acceso por rol o propietario |
+| `7f33679` | test(facturacion): factura del periodo, tarifas sin superposicion y fecha de pago |
+
+
+## Evidencias
+
+Las capturas están en `evidencias/dev-2/comunicacion-microservicios/capturas/`.
+
+| Archivo | Qué muestra |
+|---|---|
+| `f1-grpcurl-usuarios.png` | `grpcurl list` y `ExisteUsuarioActivo` |
+| `f2-jwt-401-200.png` | Facturación con 401 sin token y 200 con token |
+| `f3-medidores-locales.png` | Log del evento y tabla `medidores_locales` |
+| `f4-tarifas.png` | Tarifa 201, superposición 409 y usuario normal 403 |
+| `f5-compilado.png` | Compilación del Paso 5 |
+| `f7-arranque.png` | Arranque con el controlador final |
+| `f8-tests.png` | Resultado de `mvnw test` |
+| `f9-punta-a-punta.png` | Factura con anomalías, 409, 403 y pago |
+
+## Estado final
+
+| Pieza | Estado |
+|---|---|
+| Servidor gRPC de usuarios | Hecho |
+| JWT en facturación | Hecho |
+| Medidores locales por eventos | Hecho |
+| Tarifa como entidad propia | Hecho |
+| Factura con consumo, período completo y anomalías desde medición | Hecho |
+| Facturación mensual programada y manual | Hecho |
+| Pago con fecha, "mis facturas" y acceso por rol | Hecho |
+| Tests | Hecho |
+| Verificación de punta a punta (Paso 9) | Hecho el 2-nov, tras reiniciar medicion-service |
