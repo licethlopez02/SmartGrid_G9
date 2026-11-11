@@ -1,9 +1,7 @@
 package co.edu.uptc.medicion_service.medicion.dominio;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -30,29 +28,4 @@ class LecturaConsumoTest {
 				new BigDecimal("1"), Instant.parse("2026-01-01T10:00:00Z"), null));
 	}
 
-	@Test
-	void sugiereSensorDefectuosoCuandoElValorEsCero() {
-		LecturaConsumo lectura = crearLectura("0");
-
-		assertTrue(lectura.sugiereSensorDefectuoso(new BigDecimal("10")));
-	}
-
-	@Test
-	void sugiereSensorDefectuosoCuandoLaVariacionSuperaElCincuentaPorCiento() {
-		LecturaConsumo lectura = crearLectura("16");
-
-		assertTrue(lectura.sugiereSensorDefectuoso(new BigDecimal("10")));
-	}
-
-	@Test
-	void noSugiereSensorDefectuosoCuandoLaVariacionEsNormal() {
-		LecturaConsumo lectura = crearLectura("12");
-
-		assertFalse(lectura.sugiereSensorDefectuoso(new BigDecimal("10")));
-	}
-
-	private static LecturaConsumo crearLectura(String valor) {
-		return new LecturaConsumo(
-				new BigDecimal(valor), Instant.parse("2026-01-01T10:00:00Z"), 1L);
-	}
 }

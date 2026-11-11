@@ -5,11 +5,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "medidores", uniqueConstraints = @UniqueConstraint(
-		name = "uk_medidor_propiedad_estado", columnNames = {"propiedad", "estado"}))
+@Table(name = "medidores")
 public class MedidorJpaEntity {
 
 	@Id

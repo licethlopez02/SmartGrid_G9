@@ -12,6 +12,8 @@ public interface ConsultarMedicionUseCase {
 
 	Medidor buscarMedidor(Long medidorId);
 
+	List<Medidor> listar();
+
 	List<LecturaConsumo> historial(Long medidorId, Instant desde, Instant hasta);
 
 	BigDecimalResultado consumo(Long medidorId, Instant desde, Instant hasta);

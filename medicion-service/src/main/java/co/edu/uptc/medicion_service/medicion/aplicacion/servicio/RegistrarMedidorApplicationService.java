@@ -47,9 +47,6 @@ public class RegistrarMedidorApplicationService implements RegistrarMedidorUseCa
 			throw new IllegalArgumentException("Ya existe un medidor con id " + id);
 		}
 		String propiedadFinal = propiedad == null || propiedad.isBlank() ? ubicacion : propiedad;
-		if (usuarioId != null && medidorRepository.existeActivoPorUsuarioYPropiedad(usuarioId, propiedadFinal)) {
-			throw new IllegalArgumentException("La propiedad ya tiene un medidor asociado a un usuario activo");
-		}
 		Medidor medidor = MedidorFactory.crear(id, ubicacion, usuarioId, propiedadFinal);
 		Medidor guardado = medidorRepository.guardar(medidor);
 

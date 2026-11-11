@@ -52,9 +52,6 @@ public class DetectarAnomaliaApplicationService implements DetectarAnomaliaUseCa
 		Medidor medidor = medidorRepository.buscarPorId(medidorId)
 				.orElseThrow(() -> new IllegalArgumentException("El medidor no existe"));
 		ResultadoDeteccion resultado = deteccionAnomalia.detectar(medidor, nuevaLectura);
-		boolean sensorDefectuoso = !medidor.historialLecturas().isEmpty()
-				&& nuevaLectura.sugiereSensorDefectuoso(
-						medidor.historialLecturas().getLast().valor());
 		medidor.registrarLecturaFueraDeOrden(nuevaLectura);
 		medidorRepository.guardar(medidor);
 		medidorRepository.guardarLectura(nuevaLectura);
@@ -63,20 +60,20 @@ public class DetectarAnomaliaApplicationService implements DetectarAnomaliaUseCa
 					nuevaLectura.valor(), nuevaLectura.timestamp(), resultado.razon(), false));
 			publicarAlerta("anomalias.detectadas", medidor, anomalia, false);
 		}
-		if (sensorDefectuoso && publicadorEventos != null) {
-			publicarSensorDefectuoso(medidor, nuevaLectura, "Variación anómala del valor reportado");
-		}
 		return resultado;
 	}
 
 	@Override
 	@Transactional
 	public void alertarSensorDefectuoso(Long medidorId, BigDecimal valor, Instant timestamp, String razon) {
+		Objects.requireNonNull(valor, "El valor es obligatorio");
+		if (valor.signum() >= 0) {
+			throw new IllegalArgumentException("La alerta de sensor defectuoso requiere una lectura negativa");
+		}
 		Medidor medidor = medidorRepository.buscarPorId(medidorId)
 				.orElseThrow(() -> new IllegalArgumentException("El medidor no existe"));
 		if (publicadorEventos != null) {
-			publicarSensorDefectuoso(medidor,
-					new LecturaConsumo(valor.max(BigDecimal.ZERO), timestamp, medidorId), razon);
+			publicarSensorDefectuoso(medidor, valor, timestamp, razon);
 		}
 	}
 
@@ -92,10 +89,10 @@ public class DetectarAnomaliaApplicationService implements DetectarAnomaliaUseCa
 		anomaliaRepository.guardar(anomalia);
 	}
 
-	private void publicarSensorDefectuoso(Medidor medidor, LecturaConsumo lectura, String razon) {
+	private void publicarSensorDefectuoso(Medidor medidor, BigDecimal valor, Instant timestamp, String razon) {
 		HashMap<String, Object> contenido = base(medidor);
-		contenido.put("valor", lectura.valor());
-		contenido.put("timestamp", lectura.timestamp().toString());
+		contenido.put("valor", valor);
+		contenido.put("timestamp", timestamp.toString());
 		contenido.put("razon", razon);
 		publicadorEventos.publicar("sensores.defectuosos", String.valueOf(medidor.id()), contenido);
 	}

@@ -44,12 +44,6 @@ public class MedidorPersistenceAdapter implements MedidorRepositoryPort {
 	}
 
 	@Override
-	@Transactional(readOnly = true)
-	public boolean existeActivoPorUsuarioYPropiedad(Long usuarioId, String propiedad) {
-		return repository.existsByUsuarioIdAndPropiedadAndEstado(usuarioId, propiedad, "ACTIVO");
-	}
-
-	@Override
 	@Transactional
 	public void guardarLectura(LecturaConsumo lectura) {
 		Objects.requireNonNull(lectura, "La lectura es obligatoria");

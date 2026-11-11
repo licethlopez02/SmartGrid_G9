@@ -17,4 +17,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> manejarIllegalArgumentException(IllegalArgumentException ex) {
         return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
     }
+
+    @ExceptionHandler(ServicioUsuarioNoDisponibleException.class)
+    public ResponseEntity<ErrorResponse> manejarServicioUsuarioNoDisponible(
+            ServicioUsuarioNoDisponibleException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ErrorResponse(ex.getMessage()));
+    }
 }

@@ -38,6 +38,11 @@ public final class ConsultarMedicionApplicationService implements ConsultarMedic
 	}
 
 	@Override
+	public List<Medidor> listar() {
+		return repository.listar();
+	}
+
+	@Override
 	public List<LecturaConsumo> historial(Long medidorId, Instant desde, Instant hasta) {
 		return filtrar(buscarMedidor(medidorId), desde, hasta);
 	}

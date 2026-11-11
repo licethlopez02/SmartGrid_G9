@@ -14,11 +14,6 @@ public interface MedidorRepositoryPort {
 		return List.of();
 	}
 
-	default boolean existeActivoPorUsuarioYPropiedad(Long usuarioId, String propiedad) {
-		return listar().stream().anyMatch(m -> usuarioId != null && usuarioId.equals(m.usuarioId())
-				&& propiedad.equalsIgnoreCase(m.propiedad()) && !m.estaEnEliminacion());
-	}
-
 	Medidor guardar(Medidor medidor);
 
 	/**

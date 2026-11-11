@@ -54,6 +54,23 @@ public class MedicionController {
 				request.usuarioId(), request.propiedad()));
 	}
 
+	@GetMapping("/mios")
+	public List<MedidorResponse> misMedidores(@AuthenticationPrincipal Jwt jwt) {
+		if (jwt == null) {
+			throw new AccessDeniedException("Se requiere autenticación");
+		}
+		Long usuarioId;
+		try {
+			usuarioId = Long.valueOf(jwt.getSubject());
+		} catch (RuntimeException e) {
+			throw new AccessDeniedException("El token no contiene un usuario válido");
+		}
+		return consultarMedicion.listar().stream()
+				.filter(medidor -> Objects.equals(usuarioId, medidor.usuarioId()))
+				.map(MedicionMapper::aResponse)
+				.toList();
+	}
+
 	@PostMapping("/{medidorId}/lecturas")
 	public ResultadoDeteccionResponse registrarLectura(
 			@PathVariable Long medidorId,
@@ -139,7 +156,8 @@ public class MedicionController {
 
 	@DeleteMapping("/{medidorId}")
 	@PreAuthorize("hasRole('OPERADOR')")
-	public ResponseEntity<Void> eliminar(@PathVariable Long medidorId) {	eliminarMedidor.iniciarEliminacion(medidorId);
+	public ResponseEntity<Void> eliminar(@PathVariable Long medidorId) {
+		eliminarMedidor.iniciarEliminacion(medidorId);
 		return ResponseEntity.accepted().build();
 	}
 

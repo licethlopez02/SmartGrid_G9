@@ -12,8 +12,6 @@ public record LecturaConsumo(
 		Instant timestamp,
 		Long medidorId) {
 
-	private static final BigDecimal CAMBIO_ANOMALO = new BigDecimal("0.50");
-
 	public LecturaConsumo {
 		Objects.requireNonNull(valor, "El valor del consumo es obligatorio");
 		Objects.requireNonNull(timestamp, "El timestamp de la lectura es obligatorio");
@@ -23,25 +21,4 @@ public record LecturaConsumo(
 		}
 	}
 
-	/**
-	 * Indicates whether this reading is suspicious when compared with a reference value.
-	 * A zero reading is suspicious by itself; otherwise, a change greater than 50% is suspicious.
-	 */
-	public boolean sugiereSensorDefectuoso(BigDecimal valorReferencia) {
-		Objects.requireNonNull(valorReferencia, "El valor de referencia es obligatorio");
-		if (valorReferencia.signum() < 0) {
-			throw new IllegalArgumentException("El valor de referencia no puede ser negativo");
-		}
-		if (valor.signum() == 0) {
-			return true;
-		}
-		if (valorReferencia.signum() == 0) {
-			return false;
-		}
-
-		BigDecimal variacionRelativa = valor.subtract(valorReferencia)
-				.abs()
-				.divide(valorReferencia, 8, java.math.RoundingMode.HALF_UP);
-		return variacionRelativa.compareTo(CAMBIO_ANOMALO) > 0;
-	}
 }

@@ -4,10 +4,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import co.edu.uptc.medicion_service.medicion.aplicacion.puerto.salida.VerificadorUsuario;
+import co.edu.uptc.medicion_service.compartido.ServicioUsuarioNoDisponibleException;
 import co.edu.uptc.usuarios_service.grpc.ExisteUsuarioActivoRequest;
 import co.edu.uptc.usuarios_service.grpc.UsuarioGrpcGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
+import java.util.concurrent.TimeUnit;
+import jakarta.annotation.PreDestroy;
 
 @Component
 public class VerificadorUsuarioGrpc implements VerificadorUsuario {
@@ -27,8 +31,18 @@ public class VerificadorUsuarioGrpc implements VerificadorUsuario {
 		if (usuarioId == null) {
 			return false;
 		}
-		var respuesta = stub.existeUsuarioActivo(ExisteUsuarioActivoRequest.newBuilder()
-				.setUsuarioId(usuarioId).build());
-		return respuesta.getExiste() && respuesta.getActivo();
+		try {
+			var respuesta = stub.withDeadlineAfter(5, TimeUnit.SECONDS)
+					.existeUsuarioActivo(ExisteUsuarioActivoRequest.newBuilder()
+							.setUsuarioId(usuarioId).build());
+			return respuesta.getExiste() && respuesta.getActivo();
+		} catch (StatusRuntimeException ex) {
+			throw new ServicioUsuarioNoDisponibleException(ex);
+		}
+	}
+
+	@PreDestroy
+	void cerrarCanal() {
+		channel.shutdown();
 	}
 }
