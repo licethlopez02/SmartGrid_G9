@@ -6,11 +6,24 @@ meta {
 
 post {
   url: {{baseUrl}}/api/medidores
-  body: none
-  auth: inherit
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJ1c3Vhcmlvcy1zZXJ2aWNlIiwic3ViIjoiMyIsImV4cCI6MTc5NDM2NzUzNCwiaWF0IjoxNzk0MzYzOTM0LCJjb3JyZW8iOiJhbmEuMTc5NDM2Mzg2MDUyNkBjb3JyZW8uY29tIiwicm9sZXMiOlsiVVNVQVJJTyJdfQ.3anXwqsIF9unaibryosDSw_F7TCVEyQFJx095QPYy44
+}
+
+body:json {
+     { "id": 1, 
+      "ubicacion": "Tunja Centro", 
+      "usuarioId": <id>, 
+      "propiedad": "Casa 1" 
+     }
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
   forwardAuthorizationHeader: false
 }
