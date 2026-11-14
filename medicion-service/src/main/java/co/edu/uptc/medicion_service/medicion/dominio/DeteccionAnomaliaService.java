@@ -35,11 +35,16 @@ public final class DeteccionAnomaliaService {
 		if (historial.isEmpty()) {
 			return new ResultadoDeteccion(false, "No hay histórico suficiente para comparar");
 		}
+		BigDecimal promedio = promedio(historial);
+		return detectarConPromedio(medidor, nuevaLectura, promedio);
+	}
 
-		BigDecimal promedio = historial.stream()
-				.map(LecturaConsumo::valor)
-				.reduce(BigDecimal.ZERO, BigDecimal::add)
-				.divide(BigDecimal.valueOf(historial.size()), 8, RoundingMode.HALF_UP);
+	public ResultadoDeteccion detectarConPromedio(Medidor medidor, LecturaConsumo nuevaLectura,
+			BigDecimal promedio) {
+		Objects.requireNonNull(promedio, "El promedio es obligatorio");
+		if (promedio.signum() < 0) {
+			throw new IllegalArgumentException("El promedio no puede ser negativo");
+		}
 
 		if (promedio.signum() == 0) {
 			boolean anomalia = nuevaLectura.valor().signum() > 0;
@@ -56,5 +61,11 @@ public final class DeteccionAnomaliaService {
 						+ "% del promedio histórico"
 				: "La lectura está dentro del rango esperado";
 		return new ResultadoDeteccion(anomalia, razon);
+	}
+
+	private static BigDecimal promedio(java.util.List<LecturaConsumo> historial) {
+		return historial.stream().map(LecturaConsumo::valor)
+				.reduce(BigDecimal.ZERO, BigDecimal::add)
+				.divide(BigDecimal.valueOf(historial.size()), 8, RoundingMode.HALF_UP);
 	}
 }

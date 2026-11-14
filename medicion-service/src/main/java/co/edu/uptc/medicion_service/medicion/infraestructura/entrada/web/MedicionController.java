@@ -78,7 +78,6 @@ public class MedicionController {
 			@AuthenticationPrincipal Jwt jwt) {
 		verificarAcceso(medidorId, jwt);
 		if (request.valor() != null && request.valor().compareTo(BigDecimal.ZERO) < 0) {
-			consultarMedicion.buscarMedidor(medidorId);
 			detectarAnomalia.alertarSensorDefectuoso(medidorId, request.valor(),
 					request.timestamp() == null ? java.time.Instant.now() : request.timestamp(),
 					"Se recibió una lectura negativa");
@@ -162,7 +161,7 @@ public class MedicionController {
 	}
 
 	private void verificarAcceso(Long medidorId, @AuthenticationPrincipal Jwt jwt) {
-		MedidorResponse medidor = MedicionMapper.aResponse(consultarMedicion.buscarMedidor(medidorId));
+		MedidorResponse medidor = MedicionMapper.aResponse(consultarMedicion.buscarMedidorSinHistorial(medidorId));
 		if (jwt == null || tieneRol(jwt, "OPERADOR")) {
 			return;
 		}

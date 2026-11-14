@@ -5,10 +5,27 @@ import java.util.List;
 
 import co.edu.uptc.medicion_service.medicion.dominio.Medidor;
 import co.edu.uptc.medicion_service.medicion.dominio.LecturaConsumo;
+import java.math.BigDecimal;
 
 public interface MedidorRepositoryPort {
 
 	Optional<Medidor> buscarPorId(Long medidorId);
+
+	default Optional<Medidor> buscarPorIdSinHistorial(Long medidorId) {
+		return buscarPorId(medidorId);
+	}
+
+	default Optional<BigDecimal> promedioLecturas(Long medidorId) {
+		return buscarPorId(medidorId).flatMap(medidor -> {
+			List<LecturaConsumo> lecturas = medidor.historialLecturas();
+			if (lecturas.isEmpty()) {
+				return Optional.empty();
+			}
+			return Optional.of(lecturas.stream().map(LecturaConsumo::valor)
+					.reduce(BigDecimal.ZERO, BigDecimal::add)
+					.divide(BigDecimal.valueOf(lecturas.size()), 8, java.math.RoundingMode.HALF_UP));
+		});
+	}
 
 	default List<Medidor> listar() {
 		return List.of();

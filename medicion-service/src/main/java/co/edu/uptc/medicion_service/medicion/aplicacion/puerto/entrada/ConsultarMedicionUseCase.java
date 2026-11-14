@@ -12,6 +12,10 @@ public interface ConsultarMedicionUseCase {
 
 	Medidor buscarMedidor(Long medidorId);
 
+	default Medidor buscarMedidorSinHistorial(Long medidorId) {
+		return buscarMedidor(medidorId);
+	}
+
 	List<Medidor> listar();
 
 	List<LecturaConsumo> historial(Long medidorId, Instant desde, Instant hasta);

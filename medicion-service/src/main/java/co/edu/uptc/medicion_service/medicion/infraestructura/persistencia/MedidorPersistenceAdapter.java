@@ -32,6 +32,18 @@ public class MedidorPersistenceAdapter implements MedidorRepositoryPort {
 
 	@Override
 	@Transactional(readOnly = true)
+	public Optional<Medidor> buscarPorIdSinHistorial(Long medidorId) {
+		return repository.findById(aDatabaseId(medidorId)).map(entity -> toDomain(entity, List.of()));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Optional<java.math.BigDecimal> promedioLecturas(Long medidorId) {
+		return Optional.ofNullable(lecturasRepository.promedioPorMedidor(aDatabaseId(medidorId)));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public List<Medidor> listar() {
 		return repository.findAll().stream().map(this::toDomain).toList();
 	}
@@ -56,6 +68,10 @@ public class MedidorPersistenceAdapter implements MedidorRepositoryPort {
 				.map(lectura -> new LecturaConsumo(
 						lectura.getValor(), lectura.getTimestamp(), aLongId(lectura.getMedidorId())))
 				.toList();
+		return toDomain(entity, lecturas);
+	}
+
+	private Medidor toDomain(MedidorJpaEntity entity, List<LecturaConsumo> lecturas) {
 		Medidor medidor = MedidorFactory.crearConHistorial(aLongId(entity.getId()), entity.getUbicacion(),
 				entity.getUsuarioId(), entity.getPropiedad(), lecturas);
 		if ("EN_ELIMINACION".equals(entity.getEstado())) {

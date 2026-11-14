@@ -49,9 +49,11 @@ public class DetectarAnomaliaApplicationService implements DetectarAnomaliaUseCa
 	public ResultadoDeteccion detectar(Long medidorId, LecturaConsumo nuevaLectura) {
 		Objects.requireNonNull(medidorId, "El id del medidor es obligatorio");
 		Objects.requireNonNull(nuevaLectura, "La nueva lectura es obligatoria");
-		Medidor medidor = medidorRepository.buscarPorId(medidorId)
+		Medidor medidor = medidorRepository.buscarPorIdSinHistorial(medidorId)
 				.orElseThrow(() -> new IllegalArgumentException("El medidor no existe"));
-		ResultadoDeteccion resultado = deteccionAnomalia.detectar(medidor, nuevaLectura);
+		ResultadoDeteccion resultado = medidorRepository.promedioLecturas(medidorId)
+				.map(promedio -> deteccionAnomalia.detectarConPromedio(medidor, nuevaLectura, promedio))
+				.orElseGet(() -> new ResultadoDeteccion(false, "No hay histórico suficiente para comparar"));
 		medidor.registrarLecturaFueraDeOrden(nuevaLectura);
 		medidorRepository.guardar(medidor);
 		medidorRepository.guardarLectura(nuevaLectura);
