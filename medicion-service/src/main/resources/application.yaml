@@ -31,6 +31,9 @@ usuarios:
   grpc:
     host: ${USUARIOS_GRPC_HOST:localhost}
     port: ${USUARIOS_GRPC_PORT:9091}
+medicion:
+  periodo:
+    separacion-maxima: PT24H
 eureka:
   instance:
     prefer-ip-address: true

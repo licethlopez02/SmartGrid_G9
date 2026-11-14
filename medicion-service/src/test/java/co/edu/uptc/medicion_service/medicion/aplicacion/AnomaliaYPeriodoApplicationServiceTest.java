@@ -2,6 +2,7 @@ package co.edu.uptc.medicion_service.medicion.aplicacion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -57,6 +58,38 @@ class AnomaliaYPeriodoApplicationServiceTest {
 		Instant desde = Instant.parse("2026-01-01T10:00:00Z");
 		Instant hasta = desde.plusSeconds(3600);
 		assertTrue(new ConsultarMedicionApplicationService(medidores).periodoCompleto(1L, desde, hasta));
+	}
+
+	@Test
+	void periodoConHuecoInteriorNoEstaCompleto() {
+		FakeMedidorRepository medidores = medidorConLecturas(0, 3600, 90001);
+		Instant desde = Instant.parse("2026-01-01T10:00:00Z");
+		assertFalse(new ConsultarMedicionApplicationService(medidores).periodoCompleto(1L, desde, desde.plusSeconds(90001)));
+	}
+
+	@Test
+	void periodoSinLecturasNoEstaCompleto() {
+		FakeMedidorRepository medidores = new FakeMedidorRepository();
+		medidores.guardar(MedidorFactory.crear(1L, "Zona norte"));
+		Instant desde = Instant.parse("2026-01-01T10:00:00Z");
+		assertFalse(new ConsultarMedicionApplicationService(medidores).periodoCompleto(1L, desde, desde.plusSeconds(3600)));
+	}
+
+	@Test
+	void periodoConLecturasSoloEnLosExtremosNoEstaCompleto() {
+		FakeMedidorRepository medidores = medidorConLecturas(0, 172800);
+		Instant desde = Instant.parse("2026-01-01T10:00:00Z");
+		assertFalse(new ConsultarMedicionApplicationService(medidores).periodoCompleto(1L, desde, desde.plusSeconds(172800)));
+	}
+
+	private static FakeMedidorRepository medidorConLecturas(long... segundos) {
+		FakeMedidorRepository medidores = new FakeMedidorRepository();
+		Medidor medidor = MedidorFactory.crear(1L, "Zona norte");
+		for (long segundo : segundos) {
+			medidor.registrarLectura(lectura("10", segundo));
+		}
+		medidores.guardar(medidor);
+		return medidores;
 	}
 
 	@Test

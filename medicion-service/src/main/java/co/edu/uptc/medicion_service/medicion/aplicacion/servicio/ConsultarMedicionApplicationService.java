@@ -2,6 +2,7 @@ package co.edu.uptc.medicion_service.medicion.aplicacion.servicio;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -19,21 +20,37 @@ public final class ConsultarMedicionApplicationService implements ConsultarMedic
 	private final MedidorRepositoryPort repository;
 	private final DeteccionAnomaliaService deteccionAnomalia;
 	private final AnomaliaRepositoryPort anomaliaRepository;
+	private final Duration separacionMaxima;
 
 	public ConsultarMedicionApplicationService(MedidorRepositoryPort repository) {
-		this(repository, null);
+		this(repository, null, Duration.ofHours(24));
 	}
 
 	public ConsultarMedicionApplicationService(MedidorRepositoryPort repository,
 			AnomaliaRepositoryPort anomaliaRepository) {
+		this(repository, anomaliaRepository, Duration.ofHours(24));
+	}
+
+	public ConsultarMedicionApplicationService(MedidorRepositoryPort repository,
+			AnomaliaRepositoryPort anomaliaRepository, Duration separacionMaxima) {
 		this.repository = Objects.requireNonNull(repository, "El repositorio es obligatorio");
 		this.deteccionAnomalia = new DeteccionAnomaliaService();
 		this.anomaliaRepository = anomaliaRepository;
+		this.separacionMaxima = Objects.requireNonNull(separacionMaxima, "La separación máxima es obligatoria");
+		if (separacionMaxima.isZero() || separacionMaxima.isNegative()) {
+			throw new IllegalArgumentException("La separación máxima debe ser positiva");
+		}
 	}
 
 	@Override
 	public Medidor buscarMedidor(Long medidorId) {
 		return repository.buscarPorId(Objects.requireNonNull(medidorId, "El id del medidor es obligatorio"))
+				.orElseThrow(() -> new IllegalArgumentException("El medidor no existe"));
+	}
+
+	@Override
+	public Medidor buscarMedidorSinHistorial(Long medidorId) {
+		return repository.buscarPorIdSinHistorial(Objects.requireNonNull(medidorId, "El id del medidor es obligatorio"))
 				.orElseThrow(() -> new IllegalArgumentException("El medidor no existe"));
 	}
 
@@ -98,8 +115,21 @@ public final class ConsultarMedicionApplicationService implements ConsultarMedic
 		if (lecturas.isEmpty()) {
 			return false;
 		}
-		return !lecturas.getFirst().timestamp().isAfter(desde)
-				&& !lecturas.getLast().timestamp().isBefore(hasta);
+		if (lecturas.getFirst().timestamp().isAfter(desde)
+				|| lecturas.getLast().timestamp().isBefore(hasta)) {
+			return false;
+		}
+		Instant anterior = desde;
+		for (LecturaConsumo lectura : lecturas) {
+			if (lectura.timestamp().isBefore(desde) || lectura.timestamp().isAfter(hasta)) {
+				continue;
+			}
+			if (Duration.between(anterior, lectura.timestamp()).compareTo(separacionMaxima) > 0) {
+				return false;
+			}
+			anterior = lectura.timestamp();
+		}
+		return Duration.between(anterior, hasta).compareTo(separacionMaxima) <= 0;
 	}
 
 	@Override

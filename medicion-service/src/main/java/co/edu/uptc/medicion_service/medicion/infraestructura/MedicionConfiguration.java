@@ -2,6 +2,8 @@ package co.edu.uptc.medicion_service.medicion.infraestructura;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
+import java.time.Duration;
 
 import co.edu.uptc.medicion_service.medicion.aplicacion.puerto.salida.MedidorRepositoryPort;
 import co.edu.uptc.medicion_service.medicion.aplicacion.puerto.salida.PublicadorEventos;
@@ -34,8 +36,9 @@ public class MedicionConfiguration {
 	@Bean
 	public ConsultarMedicionApplicationService consultarMedicionApplicationService(
 			MedidorRepositoryPort medidorRepository,
-			co.edu.uptc.medicion_service.medicion.aplicacion.puerto.salida.AnomaliaRepositoryPort anomaliaRepository) {
-		return new ConsultarMedicionApplicationService(medidorRepository, anomaliaRepository);
+			co.edu.uptc.medicion_service.medicion.aplicacion.puerto.salida.AnomaliaRepositoryPort anomaliaRepository,
+			@Value("${medicion.periodo.separacion-maxima}") Duration separacionMaxima) {
+		return new ConsultarMedicionApplicationService(medidorRepository, anomaliaRepository, separacionMaxima);
 	}
 
 	@Bean
