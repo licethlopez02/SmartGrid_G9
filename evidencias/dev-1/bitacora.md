@@ -18,7 +18,13 @@ La alerta `sensores.defectuosos` se publica únicamente para lecturas negativas,
 
 ## Periodo completo
 
-`periodoCompleto` devuelve verdadero si existe al menos una lectura y la primera cubre el inicio solicitado y la última cubre el fin solicitado. En esta versión no se detectan huecos entre lecturas: el contrato se basa deliberadamente en los extremos del periodo y no introduce una separación máxima configurable.
+`periodoCompleto` devuelve verdadero si existe al menos una lectura, la primera cubre el inicio solicitado, la última cubre el fin solicitado y no hay separaciones superiores al límite configurado.
+
+La separación máxima aceptable entre lecturas quedó configurada en 24 horas (`medicion.periodo.separacion-maxima=PT24H`). `periodoCompleto` valida también los bordes y cada separación consecutiva, por lo que un hueco mayor al límite impide generar la factura.
+
+El consumo acumulado continúa calculándose bajo demanda a partir de las lecturas; no se persiste una entidad separada porque el requisito no exige una tabla propia.
+
+Para registrar lecturas, la detección usa una consulta agregada de promedio y una carga del medidor sin historial; ya no reconstruye todas las lecturas en cada POST. También se eliminó la búsqueda duplicada de la rama de lecturas negativas. La regla R4 queda cubierta por la unicidad del identificador del medidor y por una prueba que rechaza asociar un segundo usuario al mismo medidor.
 
 ## Disponibilidad de Usuarios
 
