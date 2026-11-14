@@ -1,6 +1,7 @@
 package co.edu.uptc.medicion_service.medicion.aplicacion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,18 @@ class RegistrarMedidorApplicationServiceTest {
 				.registrar(2L, "Zona norte", 42L, null);
 		assertEquals("Zona norte", segundo.ubicacion());
 		assertEquals(2, medidores.medidores.size());
+	}
+
+	@Test
+	void noPermiteAsociarDosUsuariosAlMismoMedidor() {
+		FakeMedidorRepository medidores = new FakeMedidorRepository();
+		RegistrarMedidorApplicationService servicio = new RegistrarMedidorApplicationService(
+				medidores, new FakePublicadorEventos(), usuarioId -> true);
+
+		servicio.registrar(7L, "Zona norte", 42L, "Casa");
+
+		assertThrows(IllegalArgumentException.class,
+				() -> servicio.registrar(7L, "Zona norte", 99L, "Casa"));
 	}
 
 	private static final class FakeMedidorRepository implements MedidorRepositoryPort {
