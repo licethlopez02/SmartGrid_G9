@@ -2,18 +2,18 @@
 
 ## 1. Contexto y motivadores
 
-Smart Grid monitorea el consumo eléctrico de medidores inteligentes, detecta anomalías de consumo, genera alertas y produce la facturación periódica. Lo usan el usuario/hogar (consulta su consumo y sus facturas) y el operador de red (registra medidores, resuelve anomalías, factura y ve el consumo por zona). El alcance está definido por el documento Requisitos_G9 (HU-01 a HU-09, R1 a R4, RNF1 a RNF3).
+Smart Grid monitorea el consumo eléctrico de medidores inteligentes, detecta anomalías de consumo, avisa por correo al usuario y produce la facturación periódica. Lo usan el usuario/hogar (consulta su consumo y sus facturas y recibe las alertas) y el operador de red (registra medidores, resuelve anomalías, factura y ve el consumo por zona). El alcance está definido por el documento Requisitos_G9 (HU-01 a HU-09, R1 a R4, RNF1 a RNF3).
 
 **Atributos de calidad prioritarios (ordenados).** El orden sale de los requisitos no funcionales del documento Requisitos_G9.
 
 1. **Confiabilidad de la facturación** (RNF2, R2). *Escenario:* si entre las lecturas de un período hay un hueco mayor a la separación máxima configurada, `periodoCompleto` devuelve `false` y la factura no se genera (`PeriodoNoCerradoException`). Se verifica con un test unitario.
-2. **Oportunidad de las alertas** (RNF3, HU-04). *Escenario:* una lectura que supera el umbral relativo al histórico del medidor guarda la anomalía y escribe el evento `anomalias.detectadas` en el outbox dentro de la misma transacción del `POST` de la lectura, no al facturar.
+2. **Oportunidad de las alertas** (RNF3, HU-04, HU-05). *Escenario:* una lectura que supera el umbral relativo al histórico del medidor guarda la anomalía y escribe el evento `anomalias.detectadas` en el outbox dentro de la misma transacción del `POST` de la lectura, no al facturar; el sondeo del outbox lo publica en Kafka en un máximo de 2 s y usuarios-service envía el correo al consumirlo.
 3. **Rendimiento sostenido de lecturas** (RNF1). *Escenario:* un `POST` de lectura no carga el historial completo del medidor, de modo que el número de consultas por `POST` no crece con el tamaño del historial.
 4. **Seguridad (control de acceso).** *Escenario:* `DELETE /api/medidores/{medidorId}` solo lo acepta quien tiene rol OPERADOR; una factura solo la consulta un OPERADOR o el propietario del medidor.
 5. **Testabilidad.** *Escenario:* las reglas de dominio se prueban sin base de datos ni red; cada servicio tiene su propia suite. Los `contextLoads` de facturacion y usuarios exigen Docker activo.
 
 **Restricciones reales.**
-- Equipo de backend de dos personas: Dev 1 (medicion y la unión de usuarios con los otros servicios) y Liceth (facturacion y usuarios).
+- Equipo de backend de dos personas: Dev 1 (medicion y las notificaciones de HU-05 en usuarios-service) y Liceth (facturacion y usuarios).
 - Pila definida: Java 25, Spring Boot 4.1.1, Spring Data JPA, PostgreSQL 16 en Docker Compose, Windows.
 - El proyecto llega solo hasta la comunicación entre microservicios (decisión del 2026-11-10): no se construyen más arquitecturas.
 - Las notificaciones de HU-05 se entregan desde usuarios-service mediante consumidores Kafka y SMTP.
@@ -23,7 +23,7 @@ Smart Grid monitorea el consumo eléctrico de medidores inteligentes, detecta an
 | Componente | Estilo / patrón | Almacén de datos | Comunicación | Atributo que sirve |
 |---|---|---|---|---|
 | gateway | API Gateway; enruta por nombre de servicio (`lb://`) con descubrimiento de Eureka. Rutas: `/api/medidores/**` y `/api/anomalias/**` a medicion; `/api/facturas/**` y `/api/tarifas/**` a facturacion; `/api/auth/**` y `/api/usuarios/**` a usuarios | — | HTTP entrante; HTTP hacia los servicios | Seguridad (único punto de entrada) |
-| usuarios-service | Microservicio + puertos y adaptadores; JWT HS256 | PostgreSQL, base `usuarios` | HTTP (sirve); gRPC `ExisteUsuarioActivo` en el puerto 9091 (sirve) | Seguridad; testabilidad |
+| usuarios-service | Microservicio + puertos y adaptadores; JWT HS256; consumidor Kafka de alertas y envío de correo por SMTP (`NotificacionAlertasService`, puerto `EnviadorCorreo`) | PostgreSQL, base `usuarios` | HTTP (sirve); gRPC `ExisteUsuarioActivo` en el puerto 9091 (sirve); eventos `anomalias.detectadas` y `sensores.defectuosos` (consume); SMTP (envía) | Seguridad; testabilidad; oportunidad de las alertas |
 | medicion-service | Microservicio + puertos y adaptadores; detección de anomalías en el `POST` de la lectura | PostgreSQL, base `medicion` | HTTP (sirve); gRPC (sirve consumo y anomalías a facturacion; llama a usuarios); eventos vía Outbox | Oportunidad de las alertas; rendimiento sostenido de lecturas |
 | facturacion-service | Microservicio + puertos y adaptadores; facturación mensual programada | PostgreSQL, base `facturacion` (facturas, tarifas y copia local de medidores) | HTTP (sirve); gRPC (llama a medicion); consume eventos de medidores | Confiabilidad de la facturación; testabilidad |
 | Outbox + Kafka | Transactional Outbox con sondeo (lotes de hasta 50, cada 2 s) y publicación en Kafka | Tabla outbox en la base de medicion | Publicar / suscribir | Oportunidad de las alertas; confiabilidad de la facturación |
@@ -35,6 +35,7 @@ eureka-server no tiene fila propia porque no sirve por sí mismo a ninguno de lo
 - Gateway: un solo punto de entrada para la aplicación web y el medidor.
 - Outbox: evita guardar en la base y publicar en Kafka por separado (escritura dual).
 - gRPC: consultas síncronas donde quien llama necesita la respuesta ya (¿el usuario existe y está activo?, ¿cuánto consumió el medidor en el período?).
+- Consumidor Kafka en usuarios-service: la alerta llega al usuario sin que medicion conozca los correos ni espere el envío.
 - Puertos y adaptadores: probar el dominio sin infraestructura (fitness function 1).
 
 **Antipatrones revisados.**
@@ -54,6 +55,7 @@ flowchart LR
   fac["facturacion-service<br/>Spring Boot"]
   usu["usuarios-service<br/>Spring Boot"]
   bus["Kafka<br/>Bus de eventos"]
+  smtp["Proveedor de correo<br/>SMTP (Gmail)<br/>(sistema externo)"]
   dbm[("PostgreSQL<br/>base medicion + outbox")]
   dbu[("PostgreSQL<br/>base usuarios")]
   dbf[("PostgreSQL<br/>facturacion")]
@@ -67,6 +69,8 @@ flowchart LR
   fac -->|"gRPC · síncrona"| med
   med -->|"Kafka vía Outbox · asíncrona"| bus
   bus -->|"Kafka · asíncrona"| fac
+  bus -->|"Kafka · asíncrona"| usu
+  usu -->|"SMTP · asíncrona"| smtp
   med -->|"JDBC · síncrona"| dbm
   usu -->|"JDBC · síncrona"| dbu
   fac -->|"JDBC · síncrona"| dbf
@@ -76,7 +80,7 @@ flowchart LR
   usu -.->|"registro"| eureka
 ```
 
-Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), facturacion a `facturacion` (5433) y usuarios a `usuarios` (5435), según el `application.yaml` y el `docker-compose.yaml` de cada servicio. Kafka se declara en `infra/docker-compose.yaml`.
+Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), facturacion a `facturacion` (5433) y usuarios a `usuarios` (5435), según el `application.yaml` y el `docker-compose.yaml` de cada servicio. Kafka se declara en `infra/docker-compose.yaml`. El envío de correo sale de usuarios-service hacia el servidor SMTP configurado en su `application.yaml` (`smtp.gmail.com:587`).
 
 **Conexiones.** Consultar es síncrono (gRPC o HTTP); propagar un hecho es asíncrono (evento por outbox y Kafka).
 
@@ -84,12 +88,12 @@ Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), 
 
 | Evento | Productor | Consumidor | Datos |
 |---|---|---|---|
-| `anomalias.detectadas` | medicion (outbox) | usuarios-service (`AlertasConsumoListener`) | Los de la anomalía persistida: medidor, valor, instante y razón |
-| `sensores.defectuosos` | medicion (outbox) | usuarios-service (`AlertasConsumoListener`) | Medidor, valor recibido (el valor negativo), instante y razón |
+| `anomalias.detectadas` | medicion (outbox) | usuarios-service (`AlertasConsumoListener`) | Los de la anomalía persistida: medidor, usuario destinatario, valor, instante y razón |
+| `sensores.defectuosos` | medicion (outbox) | usuarios-service (`AlertasConsumoListener`) | Medidor, usuario destinatario, valor recibido (el valor negativo), instante y razón |
 | Medidor registrado (`MedidorRegistradoListener`) | medicion | facturacion | Lo que facturacion necesita para mantener su copia local del medidor (`MedidorLocal`) |
 | Medidor en eliminación (`MedidorEnEliminacionListener`) | medicion | facturacion | Lo que facturacion necesita para reaccionar sobre su copia local del medidor |
 
-**Capa anticorrupción.** El único sistema externo es el medidor inteligente. Su lectura entra por `MedicionController.registrarLectura`, que descarta valores negativos (R1) y emite `sensores.defectuosos`. No se construyó una capa anticorrupción separada.
+**Capa anticorrupción.** El único sistema externo que entra al sistema es el medidor inteligente. Su lectura entra por `MedicionController.registrarLectura`, que descarta valores negativos (R1) y emite `sensores.defectuosos`. No se construyó una capa anticorrupción separada. El proveedor de correo es un sistema externo de salida, aislado detrás del puerto `EnviadorCorreo`.
 
 ## 4. Decisiones (ADR)
 
@@ -106,12 +110,12 @@ Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), 
 
 **Contexto.** El backend empezó como un solo proyecto Spring Boot dividido en subdominios (Medición y anomalías, Facturación) con ramas por desarrollador. Usuarios nació directamente como proyecto independiente. La etapa del curso era la comunicación entre microservicios (Lección 6), y el equipo es de dos personas con dueños distintos por dominio.
 
-**Decisión.** El backend queda en tres microservicios, uno por contexto delimitado: medicion-service (Dev 1), facturacion-service y usuarios-service (Liceth), con un gateway como entrada y un eureka-server. Cada servicio tiene su propia suite de tests.
+**Decisión.** El backend queda en tres microservicios, uno por contexto delimitado: medicion-service (Dev 1), facturacion-service y usuarios-service (Liceth; las notificaciones de HU-05 en usuarios-service las implementó Dev 1), con un gateway como entrada y un eureka-server. Cada servicio tiene su propia suite de tests.
 
 **Consecuencias.**
 - (+) Cada dominio se desarrolla, prueba y ejecuta por separado; las reglas de facturación no dependen del código de medición.
 - (+) Cada servicio tiene su propio contrato (gRPC o HTTP) y su propio control de acceso.
-- (−) Más piezas que operar: tres servicios, gateway, eureka-server, Kafka y las bases de datos, cada una con puerto propio.
+- (−) Más piezas que operar: tres servicios, gateway, eureka-server, Kafka, las bases de datos (cada una con puerto propio) y un proveedor de correo externo.
 - (−) Lo que antes era una llamada en proceso ahora es una llamada de red: si medicion-service no responde, no se puede generar una factura; si usuarios-service no responde, medicion responde 503.
 - (−) Datos duplicados (copia local de medidores en facturacion) y consistencia eventual entre servicios.
 - (−) Los `contextLoads` de facturacion y usuarios fallan sin Docker activo.
@@ -124,11 +128,11 @@ Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), 
 - Estado: Aceptada
 - Fecha: 2026-10-27
 
-**Contexto.** medicion necesita saber si un usuario existe y está activo al registrar un medidor. facturacion necesita el consumo y las anomalías no resueltas del período para facturar, y necesita conocer los medidores activos para la facturación mensual sin consultar a medicion cada vez. Una lectura negativa y una anomalía deben emitir un evento sin perderlo.
+**Contexto.** medicion necesita saber si un usuario existe y está activo al registrar un medidor. facturacion necesita el consumo y las anomalías no resueltas del período para facturar, y necesita conocer los medidores activos para la facturación mensual sin consultar a medicion cada vez. Una lectura negativa y una anomalía deben emitir un evento sin perderlo, y usuarios-service necesita recibirlos para avisar al usuario.
 
 **Decisión.**
 - Consultas síncronas por gRPC: `ExisteUsuarioActivo` (usuarios, puerto 9091) con plazo de 5 s, y la obtención de consumo y anomalías de medicion para facturacion.
-- Hechos asíncronos con Transactional Outbox: el evento se guarda en la misma transacción que el cambio de negocio y un sondeo (lotes de hasta 50, cada 2 s) lo publica en Kafka.
+- Hechos asíncronos con Transactional Outbox: el evento se guarda en la misma transacción que el cambio de negocio y un sondeo (lotes de hasta 50, cada 2 s) lo publica en Kafka. facturacion consume los eventos de medidores y usuarios consume los de anomalías y sensores defectuosos (ADR-005).
 - Entrada única por el gateway, que enruta por nombre de servicio (`lb://`) con Eureka.
 - JWT validado en cada servicio con el secreto compartido emitido por usuarios.
 
@@ -136,11 +140,11 @@ Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), 
 - (+) No se pierden eventos aunque Kafka esté caído, porque el evento queda en la base junto con el cambio.
 - (+) facturacion conoce los medidores por eventos y no depende de medicion para esa lista.
 - (+) Si usuarios no responde dentro de 5 s, medicion captura el error y responde 503, sin colgarse.
-- (−) Los consumidores pueden recibir duplicados y deben ser idempotentes.
+- (−) Los consumidores pueden recibir duplicados y deben tolerarlos.
 - (−) El sondeo añade una espera de hasta el intervalo de 2 s antes de publicar y un proceso más que operar.
 - (−) Las llamadas gRPC entre servicios se permiten sin autenticación (`GrpcSecurityConfig`), y el secreto JWT es compartido entre servicios.
 - (−) facturacion-service incluye la dependencia de Resilience4j (Circuit Breaker); medicion-service, que llama a usuarios, no la tiene y solo usa el plazo de 5 s y la respuesta 503.
-- (−) usuarios-service no tiene dependencia de Kafka, lo que limita lo que puede consumir hoy (ADR-005).
+- (−) usuarios-service pasó a depender de Kafka para recibir las alertas (ADR-005): si el broker no está disponible, el servicio no recibe los eventos.
 
 **Alternativas descartadas.**
 - Guardar en la base y publicar en Kafka por separado (escritura dual): puede dejar el sistema inconsistente si el proceso cae entre ambas.
@@ -186,25 +190,20 @@ Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), 
 - Estado: **Aceptada (2026-11-15)**
 - Fecha: 2026-11-02 (decisión del equipo), registrada el 2026-11-12
 
-**Contexto.** HU-05 pide que se alerte ante una anomalía. medicion genera y emite
-`anomalias.detectadas` y `sensores.defectuosos`; usuarios-service es dueño de los correos de
-las cuentas y entrega las alertas por SMTP.
+**Contexto.** HU-05 pide que el usuario reciba una alerta cuando se detecta una anomalía en su consumo, y la regla R1 pide una alerta de sensor defectuoso ante una lectura negativa. medicion genera y emite `anomalias.detectadas` y `sensores.defectuosos`; usuarios-service es dueño de los correos de las cuentas, por lo que entrega las alertas por SMTP.
 
 **Decisión.** usuarios-service consume `anomalias.detectadas` y `sensores.defectuosos` (grupo
 `usuarios-service`) y envía un correo por SMTP al usuario asociado al medidor. La lógica está en
 `NotificacionAlertasService`, detrás del puerto `EnviadorCorreo`; `EnviadorCorreoSmtp` y
-`AlertasConsumoListener` son los adaptadores.
+`AlertasConsumoListener` son los adaptadores. Las credenciales del correo se inyectan por las variables de entorno `MAIL_USERNAME` y `MAIL_PASSWORD`, nunca desde el repositorio.
 
-**Consecuencias esperadas.**
-- (+) usuarios ya es dueño de los correos de las cuentas; medicion no necesita conocerlos.
-- (−) usuarios-service necesita agregar la dependencia de Kafka, que hoy no tiene, y depende de un proveedor de correo externo.
-- (−) Requiere un consumidor idempotente para no enviar correos duplicados.
-
-**Consecuencias de la implementación.**
-- Entrega al menos una vez: un evento reentregado puede producir un correo duplicado.
-- Un fallo de SMTP se registra en el log y no afecta a medición ni a facturación.
-- Las credenciales de correo se inyectan por `MAIL_USERNAME` y `MAIL_PASSWORD`.
-- El sensor defectuoso se notifica solo por correo; no se persiste.
+**Consecuencias.**
+- (+) usuarios ya es dueño de los correos de las cuentas; medicion no necesita conocerlos ni esperar el envío.
+- (+) Un fallo de SMTP o un evento inválido se registra en el log y no afecta a medicion ni a facturacion.
+- (−) usuarios-service ahora depende de Kafka y de un proveedor de correo externo (SMTP de Gmail con contraseña de aplicación).
+- (−) Entrega al menos una vez: un evento reentregado puede producir un correo duplicado.
+- (−) Sin reintentos: con `auto-offset-reset: latest`, las alertas publicadas mientras usuarios-service está apagado no se envían, y un fallo de SMTP no se reintenta. La anomalía sigue consultable por API y visible en la pantalla Alertas.
+- (−) El sensor defectuoso se notifica solo por correo; no se persiste.
 
 **Alternativa considerada.** Que medicion envíe el correo directamente: mezclaría en medición una responsabilidad de comunicación con usuarios y necesitaría conocer sus correos.
 
@@ -225,7 +224,7 @@ las cuentas y entrega las alertas por SMTP.
 
 ## 6. Mesh: ¿lo necesitamos?
 
-- **Service mesh: no.** Hay 3 microservicios de negocio más gateway y eureka-server (5 procesos de backend) y un equipo de backend de 2 personas. No hay manifiestos de Kubernetes en el repositorio (la búsqueda de `kind: Deployment` en los `.yaml` no dio resultados); el entorno es local con Docker Compose. Los requisitos de seguridad y resiliencia los cubre cada servicio: JWT validado en cada uno, plazo de 5 s en la llamada a usuarios y Resilience4j declarado en facturacion-service. En lugar de un mesh usan el gateway, Eureka y gRPC con plazo.
+- **Service mesh: no.** Hay 3 microservicios de negocio más gateway y eureka-server (5 procesos de backend) y un equipo de backend de 2 personas. No hay manifiestos de Kubernetes en el repositorio, el entorno es local con Docker Compose. Los requisitos de seguridad y resiliencia los cubre cada servicio: JWT validado en cada uno, plazo de 5 s en la llamada a usuarios y Resilience4j declarado en facturacion-service. En lugar de un mesh usan el gateway, Eureka y gRPC con plazo.
 - **Data mesh: no.** Hay un solo dominio de datos (consumo y facturación de una red) y un solo equipo de 2 personas; no hay varios equipos que publiquen datos como producto. En su lugar usan una base por servicio (ADR-003).
 
 ## 7. Riesgos y deuda conocida
@@ -233,9 +232,10 @@ las cuentas y entrega las alertas por SMTP.
 - **Bases de datos sin volúmenes en Docker Compose.** `medicion-db`, `facturacion-db` y `usuarios-db` no declaran volúmenes, así que los datos se pierden si se elimina el contenedor. Si se materializa, se vuelven a crear los datos de prueba y se agregan volúmenes con nombre.
 - **gRPC entre servicios sin autenticación** (`GrpcSecurityConfig`). Si se materializa un acceso no autorizado a los puertos gRPC, se restringen los puertos a la red interna y se agrega un interceptor que exija un token.
 - **Secreto JWT compartido (HS256) entre servicios.** Si el secreto se filtra, se pueden emitir tokens válidos en todos los servicios; se rota el secreto y se reinician los tres.
-- **Entrega al menos una vez de alertas** (ADR-005). Si usuarios-service cae después de enviar el
-  correo y antes de confirmar el mensaje, Kafka puede reentregarlo y producir un duplicado.
+- **Valores de desarrollo escritos en los `application.yaml`** (`jwt.secret`, `spring.datasource.password` y `operador-inicial.contrasena` en usuarios; `jwt.secret` y `spring.datasource.password` en medicion y facturacion). Valen solo para el entorno local; antes de cualquier despliegue se pasan a variables de entorno, como ya se hace con las credenciales de correo.
+- **Entrega al menos una vez y sin reintentos de las alertas** (ADR-005). Si usuarios-service cae después de enviar el correo y antes de confirmar el mensaje, Kafka puede reentregarlo y producir un duplicado. Si está apagado cuando se publica el evento, o el SMTP falla, la alerta por correo no se envía; se mitiga cambiando el offset inicial junto con un control por identificador de evento, o agregando reintentos.
 - **Sin Circuit Breaker en medicion-service.** Si usuarios queda lento, medicion solo se protege con el plazo de 5 s y la respuesta 503; se agrega Resilience4j, que ya está declarado en facturacion-service.
 - **Consumo acumulado calculado bajo demanda y sin entidad propia.** Si el volumen de lecturas lo vuelve lento, se pasa a un consumo acumulado persistido o al modelo de lectura del ADR-004.
-- **Idempotencia de consumidores no verificada.** Si los listeners de facturacion no son idempotentes, un duplicado del outbox puede repetir una acción; se agrega control por identificador de evento.
+- **Idempotencia de consumidores no verificada.** Si los listeners de facturacion y de usuarios no son idempotentes, un duplicado del outbox puede repetir una acción; se agrega control por identificador de evento.
+- **Lecturas sin clave de idempotencia.** Una lectura reenviada por el medidor se guarda dos veces; se agrega una clave única por medidor e instante si el medidor puede reintentar.
 - **Pruebas que dependen de Docker.** Los `contextLoads` de facturacion y usuarios fallan sin Docker activo; se separan en un perfil de integración.
