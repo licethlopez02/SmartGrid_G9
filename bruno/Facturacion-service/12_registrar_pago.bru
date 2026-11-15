@@ -1,0 +1,22 @@
+meta {
+  name: 12 - Registrar pago
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/facturas/{{facturaId}}/pago
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenOperador}}
+}
+
+tests {
+  test("registra el pago", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().estado).to.equal("PAGADA");
+  });
+}

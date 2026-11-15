@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/api/medidores/{{id}}/lecturas
+  url: {{baseUrl}}/api/medidores/{{medidorId}}/lecturas
   body: json
   auth: inherit
 }
@@ -19,7 +19,7 @@ body:json {
 
 vars:pre-request {
   baseUrl: http://localhost:8080
-  id: 1
+  medidorId: 1
 }
 
 settings {

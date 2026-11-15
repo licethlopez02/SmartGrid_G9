@@ -1,0 +1,22 @@
+meta {
+  name: Consumo por zona
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/medidores/consumo-por-zona?zona=Tunja
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenOperador}}
+}
+
+tests {
+  test("devuelve una lista", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody()).to.be.an("array");
+  });
+}

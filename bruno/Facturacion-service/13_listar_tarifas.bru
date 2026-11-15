@@ -1,0 +1,18 @@
+meta {
+  name: 13 - Listar tarifas
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/api/tarifas
+  body: none
+  auth: none
+}
+
+tests {
+  test("devuelve una lista de tarifas", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody()).to.be.an("array");
+  });
+}

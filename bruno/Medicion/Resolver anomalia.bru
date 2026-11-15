@@ -1,0 +1,25 @@
+meta {
+  name: Resolver anomalia
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/api/anomalias/{{anomaliaId}}/resolver
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenOperador}}
+}
+
+vars:pre-request {
+  anomaliaId: 1
+}
+
+tests {
+  test("resuelve la anomalia", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+}

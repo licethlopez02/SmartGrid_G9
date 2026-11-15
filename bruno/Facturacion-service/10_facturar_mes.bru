@@ -1,0 +1,21 @@
+meta {
+  name: 10 - Facturar mes
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/facturas/mensual?mes=2026-10
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenOperador}}
+}
+
+tests {
+  test("responde correctamente", function () {
+    expect(res.getStatus()).to.be.oneOf([200, 201]);
+  });
+}

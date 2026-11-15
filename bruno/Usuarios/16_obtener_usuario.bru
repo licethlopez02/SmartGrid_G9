@@ -1,0 +1,22 @@
+meta {
+  name: 16 - Obtener usuario por id
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{usuariosUrl}}/api/usuarios/{{usuarioId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenOperador}}
+}
+
+tests {
+  test("devuelve el usuario", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody()).to.have.property("id");
+  });
+}

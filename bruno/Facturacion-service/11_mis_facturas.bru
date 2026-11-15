@@ -1,0 +1,22 @@
+meta {
+  name: 11 - Mis facturas
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/api/facturas/mias
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenUsuario}}
+}
+
+tests {
+  test("devuelve una lista", function () {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody()).to.be.an("array");
+  });
+}

@@ -1,0 +1,29 @@
+meta {
+  name: 14 - Registrar tarifa
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/api/tarifas
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenOperador}}
+}
+
+body:json {
+  {
+    "valor": 650.00,
+    "vigenciaDesde": "2026-01-01",
+    "vigenciaHasta": "2030-12-31"
+  }
+}
+
+tests {
+  test("crea la tarifa", function () {
+    expect(res.getStatus()).to.equal(201);
+  });
+}

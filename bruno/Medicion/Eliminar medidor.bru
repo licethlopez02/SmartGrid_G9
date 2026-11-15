@@ -1,0 +1,21 @@
+meta {
+  name: Eliminar medidor
+  type: http
+  seq: 10
+}
+
+delete {
+  url: {{baseUrl}}/api/medidores/{{medidorId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenOperador}}
+}
+
+tests {
+  test("acepta la eliminación", function () {
+    expect(res.getStatus()).to.equal(202);
+  });
+}
