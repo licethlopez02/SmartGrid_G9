@@ -16,7 +16,7 @@ Smart Grid monitorea el consumo eléctrico de medidores inteligentes, detecta an
 - Equipo de backend de dos personas: Dev 1 (medicion y la unión de usuarios con los otros servicios) y Liceth (facturacion y usuarios).
 - Pila definida: Java 25, Spring Boot 4.1.1, Spring Data JPA, PostgreSQL 16 en Docker Compose, Windows.
 - El proyecto llega solo hasta la comunicación entre microservicios (decisión del 2026-11-10): no se construyen más arquitecturas.
-- Las notificaciones de HU-05 no se evalúan; solo la generación y la emisión del evento.
+- Las notificaciones de HU-05 se entregan desde usuarios-service mediante consumidores Kafka y SMTP.
 
 ## 2. Estilos y patrones por componente
 
@@ -84,8 +84,8 @@ Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), 
 
 | Evento | Productor | Consumidor | Datos |
 |---|---|---|---|
-| `anomalias.detectadas` | medicion (outbox) | Ninguno implementado: la entrega de la alerta no existe (ADR-005) | Los de la anomalía persistida: medidor, valor, instante y razón |
-| `sensores.defectuosos` | medicion (outbox) | Ninguno implementado | Medidor, valor recibido (el valor negativo), instante y razón |
+| `anomalias.detectadas` | medicion (outbox) | usuarios-service (`AlertasConsumoListener`) | Los de la anomalía persistida: medidor, valor, instante y razón |
+| `sensores.defectuosos` | medicion (outbox) | usuarios-service (`AlertasConsumoListener`) | Medidor, valor recibido (el valor negativo), instante y razón |
 | Medidor registrado (`MedidorRegistradoListener`) | medicion | facturacion | Lo que facturacion necesita para mantener su copia local del medidor (`MedidorLocal`) |
 | Medidor en eliminación (`MedidorEnEliminacionListener`) | medicion | facturacion | Lo que facturacion necesita para reaccionar sobre su copia local del medidor |
 
@@ -97,7 +97,7 @@ Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), 
 - ADR-002: Comunicación: gRPC para consultas y Outbox con Kafka para hechos, detrás de un gateway (Aceptada)
 - ADR-003: Una base de datos PostgreSQL por servicio (Aceptada)
 - ADR-004: CQRS para las consultas de lectura (**Propuesta, no implementada**)
-- ADR-005: Entrega de alertas por correo desde usuarios-service (**Propuesta, no implementada**)
+- ADR-005: Entrega de alertas por correo desde usuarios-service (**Aceptada**)
 
 ### ADR-001: Descomponer el backend en tres microservicios
 
@@ -183,17 +183,28 @@ Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), 
 
 ### ADR-005: Entrega de alertas por correo desde usuarios-service
 
-- Estado: **Propuesta. No implementada.**
+- Estado: **Aceptada (2026-11-15)**
 - Fecha: 2026-11-02 (decisión del equipo), registrada el 2026-11-12
 
-**Contexto.** HU-05 pide que se alerte ante una anomalía. medicion genera y emite `anomalias.detectadas`, pero ningún servicio consume el evento ni entrega la alerta. El equipo decidió que la alerta llega al operador y que el correo (Gmail) puede salir desde usuarios-service.
+**Contexto.** HU-05 pide que se alerte ante una anomalía. medicion genera y emite
+`anomalias.detectadas` y `sensores.defectuosos`; usuarios-service es dueño de los correos de
+las cuentas y entrega las alertas por SMTP.
 
-**Decisión propuesta.** usuarios-service consume `anomalias.detectadas` y envía el correo al operador.
+**Decisión.** usuarios-service consume `anomalias.detectadas` y `sensores.defectuosos` (grupo
+`usuarios-service`) y envía un correo por SMTP al usuario asociado al medidor. La lógica está en
+`NotificacionAlertasService`, detrás del puerto `EnviadorCorreo`; `EnviadorCorreoSmtp` y
+`AlertasConsumoListener` son los adaptadores.
 
 **Consecuencias esperadas.**
 - (+) usuarios ya es dueño de los correos de las cuentas; medicion no necesita conocerlos.
 - (−) usuarios-service necesita agregar la dependencia de Kafka, que hoy no tiene, y depende de un proveedor de correo externo.
 - (−) Requiere un consumidor idempotente para no enviar correos duplicados.
+
+**Consecuencias de la implementación.**
+- Entrega al menos una vez: un evento reentregado puede producir un correo duplicado.
+- Un fallo de SMTP se registra en el log y no afecta a medición ni a facturación.
+- Las credenciales de correo se inyectan por `MAIL_USERNAME` y `MAIL_PASSWORD`.
+- El sensor defectuoso se notifica solo por correo; no se persiste.
 
 **Alternativa considerada.** Que medicion envíe el correo directamente: mezclaría en medición una responsabilidad de comunicación con usuarios y necesitaría conocer sus correos.
 
@@ -222,7 +233,8 @@ Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), 
 - **Bases de datos sin volúmenes en Docker Compose.** `medicion-db`, `facturacion-db` y `usuarios-db` no declaran volúmenes, así que los datos se pierden si se elimina el contenedor. Si se materializa, se vuelven a crear los datos de prueba y se agregan volúmenes con nombre.
 - **gRPC entre servicios sin autenticación** (`GrpcSecurityConfig`). Si se materializa un acceso no autorizado a los puertos gRPC, se restringen los puertos a la red interna y se agrega un interceptor que exija un token.
 - **Secreto JWT compartido (HS256) entre servicios.** Si el secreto se filtra, se pueden emitir tokens válidos en todos los servicios; se rota el secreto y se reinician los tres.
-- **Alertas sin entrega** (ADR-005). `anomalias.detectadas` y `sensores.defectuosos` se emiten pero nadie los consume; HU-05 queda cumplida solo en generación y emisión.
+- **Entrega al menos una vez de alertas** (ADR-005). Si usuarios-service cae después de enviar el
+  correo y antes de confirmar el mensaje, Kafka puede reentregarlo y producir un duplicado.
 - **Sin Circuit Breaker en medicion-service.** Si usuarios queda lento, medicion solo se protege con el plazo de 5 s y la respuesta 503; se agrega Resilience4j, que ya está declarado en facturacion-service.
 - **Consumo acumulado calculado bajo demanda y sin entidad propia.** Si el volumen de lecturas lo vuelve lento, se pasa a un consumo acumulado persistido o al modelo de lectura del ADR-004.
 - **Idempotencia de consumidores no verificada.** Si los listeners de facturacion no son idempotentes, un duplicado del outbox puede repetir una acción; se agrega control por identificador de evento.

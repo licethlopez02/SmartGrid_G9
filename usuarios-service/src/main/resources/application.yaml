@@ -18,6 +18,22 @@ spring:
   grpc:
     server:
       port: 9091
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: usuarios-service
+      auto-offset-reset: latest
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 jwt:
   secret: ${JWT_SECRET:clave-de-desarrollo-smart-grid-g9-minimo-32-bytes}
   expiracion-minutos: 60
