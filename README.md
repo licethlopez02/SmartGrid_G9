@@ -78,18 +78,32 @@ El frontend vive en otro repositorio: `Smart-Grid-Frontend/`.
 
 Todas tienen valor por defecto de desarrollo, salvo las de correo.
 
-| Variable | Servicio | Para qué |
-| --- | --- | --- |
-| `MAIL_USERNAME` | usuarios | Cuenta de Gmail que envía las alertas |
-| `MAIL_PASSWORD` | usuarios | Contraseña de aplicación de esa cuenta (16 letras, sin espacios) |
-| `JWT_SECRET` | usuarios, medición, facturación | Secreto de los tokens; **debe ser el mismo en los tres** |
-| `OPERADOR_CORREO` | usuarios | Correo del operador inicial |
-| `OPERADOR_CONTRASENA` | usuarios | Contraseña del operador inicial |
-| `USUARIOS_GRPC_HOST` y `USUARIOS_GRPC_PORT` | medición | Dónde está el gRPC de usuarios |
+| Variable | Servicio | Para qué | Valor por defecto |
+| --- | --- | --- | --- |
+| `MAIL_USERNAME` | usuarios | Cuenta Gmail que envía las alertas | ninguno (sin ella no se envían correos) |
+| `MAIL_PASSWORD` | usuarios | Contraseña de aplicación de esa cuenta | ninguno |
+| `JWT_SECRET` | usuarios, medicion, facturacion | Secreto de los tokens; debe ser el mismo en los tres | valor de desarrollo |
+| `USUARIOS_DB_PASSWORD` | usuarios | Contraseña de la base `usuarios` | valor de desarrollo |
+| `MEDICION_DB_PASSWORD` | medicion | Contraseña de la base `medicion` | valor de desarrollo |
+| `FACTURACION_DB_PASSWORD` | facturacion | Contraseña de la base `facturacion` | valor de desarrollo |
+| `OPERADOR_CONTRASENA` | usuarios | Contraseña del operador inicial | valor de desarrollo |
+| `OPERADOR_CORREO` | usuarios | Correo del operador inicial | valor de desarrollo |
+| `USUARIOS_GRPC_HOST` y `USUARIOS_GRPC_PORT` | medicion | Dónde está el gRPC de usuarios | localhost / 9091 |
 
 **Las credenciales de correo van solo en variables de entorno. Nunca las escribas en el repositorio ni las compartas.**
 
 Si no defines `MAIL_USERNAME` y `MAIL_PASSWORD`, el servicio no valida que existan: el sistema sigue funcionando, pero el envío de correo falla y queda un error en el log. La anomalía sigue visible en la pantalla Alertas.
+
+### Alertas por correo (usuarios-service)
+
+Requiere Kafka arriba (`infra/docker-compose.yaml`, puerto 9092) y una contraseña de aplicación de Gmail. Las credenciales van solo en variables de entorno, nunca en el repositorio:
+
+```powershell
+$env:MAIL_USERNAME = "cuenta@gmail.com"
+$env:MAIL_PASSWORD = "contraseña-de-aplicación-sin-espacios"
+cd usuarios-service
+.\mvnw.cmd spring-boot:run
+```
 
 ### Crear la contraseña de aplicación de Gmail
 
