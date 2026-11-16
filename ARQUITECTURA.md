@@ -162,7 +162,7 @@ Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), 
 **Consecuencias.**
 - (+) Cada servicio puede cambiar su esquema sin coordinarse con los demás.
 - (+) Verificado el 2026-11-12 en los `application.yaml` y los `docker-compose.yaml`: medicion usa la base `medicion` (puerto 5432), facturacion la base `facturacion` (5433) y usuarios la base `usuarios` (5435), cada una en su propio servicio de Compose.
-- (−) Los servicios de base de datos de Compose no declaran volúmenes: los datos viven mientras exista el contenedor.
+- (+) Los servicios de base de datos de Compose declaran un volumen con nombre (`usuarios_data`, `medicion_data` y `facturacion_data`): los datos sobreviven a la recreación de los contenedores y solo se pierden con `docker compose down -v`.
 - (−) Datos duplicados (copia local de medidores) que pueden quedar desfasados hasta que llegue el evento.
 - (−) El consumo acumulado no se guarda: se calcula sumando lecturas cada vez que se pide (`GET /api/medidores/{medidorId}/consumo`) y no existe una entidad `ConsumoAcumulado`.
 - (−) Sin transacción entre servicios, la consistencia depende de eventos e idempotencia.
@@ -229,10 +229,9 @@ Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), 
 
 ## 7. Riesgos y deuda conocida
 
-- **Bases de datos sin volúmenes en Docker Compose.** `medicion-db`, `facturacion-db` y `usuarios-db` no declaran volúmenes, así que los datos se pierden si se elimina el contenedor. Si se materializa, se vuelven a crear los datos de prueba y se agregan volúmenes con nombre.
 - **gRPC entre servicios sin autenticación** (`GrpcSecurityConfig`). Si se materializa un acceso no autorizado a los puertos gRPC, se restringen los puertos a la red interna y se agrega un interceptor que exija un token.
 - **Secreto JWT compartido (HS256) entre servicios.** Si el secreto se filtra, se pueden emitir tokens válidos en todos los servicios; se rota el secreto y se reinician los tres.
-- **Valores de desarrollo escritos en los `application.yaml`** (`jwt.secret`, `spring.datasource.password` y `operador-inicial.contrasena` en usuarios; `jwt.secret` y `spring.datasource.password` en medicion y facturacion). Valen solo para el entorno local; antes de cualquier despliegue se pasan a variables de entorno, como ya se hace con las credenciales de correo.
+- **Valores de desarrollo como valor por defecto en los `application.yaml`.** `jwt.secret`, las contraseñas de las bases de datos y la contraseña del operador inicial se leen de variables de entorno (`JWT_SECRET`, `USUARIOS_DB_PASSWORD`, `MEDICION_DB_PASSWORD`, `FACTURACION_DB_PASSWORD`, `OPERADOR_CONTRASENA`), pero conservan un valor de desarrollo por defecto para poder arrancar en local. Si se despliega sin definir las variables, el sistema usaría esos valores conocidos; antes de cualquier despliegue se definen todas.
 - **Entrega al menos una vez y sin reintentos de las alertas** (ADR-005). Si usuarios-service cae después de enviar el correo y antes de confirmar el mensaje, Kafka puede reentregarlo y producir un duplicado. Si está apagado cuando se publica el evento, o el SMTP falla, la alerta por correo no se envía; se mitiga cambiando el offset inicial junto con un control por identificador de evento, o agregando reintentos.
 - **Sin Circuit Breaker en medicion-service.** Si usuarios queda lento, medicion solo se protege con el plazo de 5 s y la respuesta 503; se agrega Resilience4j, que ya está declarado en facturacion-service.
 - **Consumo acumulado calculado bajo demanda y sin entidad propia.** Si el volumen de lecturas lo vuelve lento, se pasa a un consumo acumulado persistido o al modelo de lectura del ADR-004.
