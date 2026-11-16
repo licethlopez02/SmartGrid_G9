@@ -14,7 +14,7 @@ Smart Grid monitorea el consumo eléctrico de medidores inteligentes, detecta an
 
 **Restricciones reales.**
 - Equipo de backend de dos personas: Dev 1 (medicion y las notificaciones de HU-05 en usuarios-service) y Liceth (facturacion y usuarios).
-- Pila definida: Java 25, Spring Boot 4.1.1, Spring Data JPA, PostgreSQL 16 en Docker Compose, Windows.
+- Pila definida: Java 25, Spring Boot 4.1.2, Spring Data JPA, PostgreSQL 16 en Docker Compose, Windows.
 - El proyecto llega solo hasta la comunicación entre microservicios (decisión del 2026-11-10): no se construyen más arquitecturas.
 - Las notificaciones de HU-05 se entregan desde usuarios-service mediante consumidores Kafka y SMTP.
 
@@ -187,15 +187,16 @@ Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), 
 
 ### ADR-005: Entrega de alertas por correo desde usuarios-service
 
-- Estado: **Aceptada (2026-11-15)**
+- Estado: **Aceptada**
 - Fecha: 2026-11-02 (decisión del equipo), registrada el 2026-11-12
+- Validación de extremo a extremo con Gmail: pendiente (anotar aquí la fecha al hacerla)
 
 **Contexto.** HU-05 pide que el usuario reciba una alerta cuando se detecta una anomalía en su consumo, y la regla R1 pide una alerta de sensor defectuoso ante una lectura negativa. medicion genera y emite `anomalias.detectadas` y `sensores.defectuosos`; usuarios-service es dueño de los correos de las cuentas, por lo que entrega las alertas por SMTP.
 
 **Decisión.** usuarios-service consume `anomalias.detectadas` y `sensores.defectuosos` (grupo
 `usuarios-service`) y envía un correo por SMTP al usuario asociado al medidor. La lógica está en
 `NotificacionAlertasService`, detrás del puerto `EnviadorCorreo`; `EnviadorCorreoSmtp` y
-`AlertasConsumoListener` son los adaptadores. Las credenciales del correo son las de una cuenta de Gmail desechable creada solo para el proyecto, definidas como valor por defecto de `MAIL_USERNAME` y `MAIL_PASSWORD` en el `application.yaml`; pueden sobrescribirse con esas variables de entorno.
+`AlertasConsumoListener` son los adaptadores. Las credenciales del correo se inyectan por las variables de entorno `MAIL_USERNAME` y `MAIL_PASSWORD`, nunca desde el repositorio.
 
 **Consecuencias.**
 - (+) usuarios ya es dueño de los correos de las cuentas; medicion no necesita conocerlos ni esperar el envío.
@@ -216,24 +217,23 @@ Cada servicio se conecta a su propia base: medicion a `medicion` (puerto 5432), 
      `Get-ChildItem -Recurse -Path "*\src\main\java" -Filter "*.java" | Where-Object { $_.FullName -match "\\dominio\\" } | Select-String -Pattern "import .*infraestructura"`
      No debe haber coincidencias.
    - *Cuándo:* manualmente antes de cada Pull Request. No está automatizada en CI; la evolución natural es una prueba ArchUnit (Propuesta, no implementada).
-   - *Resultado (2026-11-12):* **cumple**, sin coincidencias.
+   - *Resultado (2026-11-12):* **cumple**, sin coincidencias. Se vuelve a ejecutar tras los cambios del correo y se actualiza esta fecha.
 2. **Ningún servicio usa la base de datos de otro.**
    - *Regla:* cada servicio apunta a una base distinta.
    - *Verificación:* `Select-String -Path "*\src\main\resources\application*.y*ml" -Pattern "jdbc:postgresql"` y comparar la base de cada servicio; deben ser distintas.
    - *Cuándo:* manualmente al cambiar la configuración de un servicio y antes de entregar.
-   - *Resultado (2026-11-12):* **cumple**. medicion-service apunta a `localhost:5432/medicion`, facturacion-service a `localhost:5433/facturacion` y usuarios-service a `127.0.0.1:5435/usuarios`. Cada URL está en el `application.yaml` de su servicio y corresponde a un servicio de Compose distinto. No se consultaron las tablas dentro de los contenedores porque Docker no estaba disponible durante la revisión.
+   - *Resultado (2026-11-12):* **cumple**. medicion-service apunta a `localhost:5432/medicion`, facturacion-service a `localhost:5433/facturacion` y usuarios-service a `127.0.0.1:5435/usuarios`. Cada URL está en el `application.yaml` de su servicio y corresponde a un servicio de Compose distinto. No se consultaron las tablas dentro de los contenedores porque Docker no estaba disponible durante la revisión. Se vuelve a ejecutar tras los cambios del correo y se actualiza esta fecha.
 
 ## 6. Mesh: ¿lo necesitamos?
 
-- **Service mesh: no.** Hay 3 microservicios de negocio más gateway y eureka-server (5 procesos de backend) y un equipo de backend de 2 personas. No hay manifiestos de Kubernetes en el repositorio, el entorno es local con Docker Compose. Los requisitos de seguridad y resiliencia los cubre cada servicio: JWT validado en cada uno, plazo de 5 s en la llamada a usuarios y Resilience4j declarado en facturacion-service. En lugar de un mesh usan el gateway, Eureka y gRPC con plazo.
+- **Service mesh: no.** Hay 3 microservicios de negocio más gateway y eureka-server (5 procesos de backend) y un equipo de backend de 2 personas. No hay manifiestos de Kubernetes en el repositorio (la búsqueda de `kind: Deployment` en los `.yaml` no dio resultados); el entorno es local con Docker Compose. Los requisitos de seguridad y resiliencia los cubre cada servicio: JWT validado en cada uno, plazo de 5 s en la llamada a usuarios y Resilience4j declarado en facturacion-service. En lugar de un mesh usan el gateway, Eureka y gRPC con plazo.
 - **Data mesh: no.** Hay un solo dominio de datos (consumo y facturación de una red) y un solo equipo de 2 personas; no hay varios equipos que publiquen datos como producto. En su lugar usan una base por servicio (ADR-003).
 
 ## 7. Riesgos y deuda conocida
 
 - **gRPC entre servicios sin autenticación** (`GrpcSecurityConfig`). Si se materializa un acceso no autorizado a los puertos gRPC, se restringen los puertos a la red interna y se agrega un interceptor que exija un token.
 - **Secreto JWT compartido (HS256) entre servicios.** Si el secreto se filtra, se pueden emitir tokens válidos en todos los servicios; se rota el secreto y se reinician los tres.
-- **Valores de desarrollo como valor por defecto en los `application.yaml`.** `jwt.secret` y la contraseña del operador inicial ya se leen de variables de entorno (`JWT_SECRET`, `OPERADOR_CONTRASENA`) con un valor por defecto de desarrollo.
-- **Contraseña de aplicación de la cuenta de correo escrita en el `application.yaml` de usuarios-service.** Cualquiera con acceso al repositorio puede enviar correos desde esa cuenta desechable. Si se materializa, se revoca en `myaccount.google.com/apppasswords`, se crea otra y se pasa a variable de entorno. Antes de cualquier despliegue se retira del repositorio.
+- **Valores de desarrollo escritos en los `application.yaml`** (`jwt.secret`, `spring.datasource.password` y `operador-inicial.contrasena` en usuarios; `jwt.secret` y `spring.datasource.password` en medicion y facturacion). Valen solo para el entorno local; antes de cualquier despliegue se pasan a variables de entorno, como ya se hace con las credenciales de correo.
 - **Entrega al menos una vez y sin reintentos de las alertas** (ADR-005). Si usuarios-service cae después de enviar el correo y antes de confirmar el mensaje, Kafka puede reentregarlo y producir un duplicado. Si está apagado cuando se publica el evento, o el SMTP falla, la alerta por correo no se envía; se mitiga cambiando el offset inicial junto con un control por identificador de evento, o agregando reintentos.
 - **Sin Circuit Breaker en medicion-service.** Si usuarios queda lento, medicion solo se protege con el plazo de 5 s y la respuesta 503; se agrega Resilience4j, que ya está declarado en facturacion-service.
 - **Consumo acumulado calculado bajo demanda y sin entidad propia.** Si el volumen de lecturas lo vuelve lento, se pasa a un consumo acumulado persistido o al modelo de lectura del ADR-004.
