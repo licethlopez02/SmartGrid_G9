@@ -6,7 +6,7 @@ spring:
   datasource:
     url: jdbc:postgresql://127.0.0.1:5435/usuarios?sslmode=disable
     username: usuarios_user
-    password: usuarios_pass
+    password: ${USUARIOS_DB_PASSWORD:usuarios_pass}
   jpa:
     hibernate:
       ddl-auto: update

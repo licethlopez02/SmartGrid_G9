@@ -6,7 +6,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5433/facturacion
     username: facturacion_user
-    password: facturacion_pass
+    password: ${FACTURACION_DB_PASSWORD:facturacion_pass}
     driver-class-name: org.postgresql.Driver
   docker:
     compose:

@@ -6,7 +6,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/medicion
     username: medicion_user
-    password: medicion_pass
+    password: ${MEDICION_DB_PASSWORD:medicion_pass}
     driver-class-name: org.postgresql.Driver
   docker:
     compose:
