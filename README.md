@@ -30,7 +30,7 @@ Reglas de negocio: una lectura negativa se descarta y genera una alerta de senso
 | Maven | No hace falta instalarlo: cada módulo trae `mvnw.cmd` | Compilar y ejecutar |
 | Docker Desktop | Abierto y en ejecución | Bases de datos y Kafka |
 | Node.js | 18 o superior | Frontend y simulador de medidor |
-| Cuenta de Gmail con verificación en dos pasos | — | Solo para probar las alertas por correo |
+| Cuenta de Gmail (opcional) | — | Solo si quieres enviar las alertas desde tu propia cuenta; el proyecto trae una cuenta de desarrollo ya configurada |
 
 Los módulos usan Spring Boot 4.1.2.
 
@@ -76,12 +76,12 @@ El frontend vive en otro repositorio: `Smart-Grid-Frontend/`.
 
 ## Variables de entorno
 
-Todas tienen valor por defecto de desarrollo, salvo las de correo.
+Todas tienen valor por defecto de desarrollo.
 
 | Variable | Servicio | Para qué | Valor por defecto |
 | --- | --- | --- | --- |
-| `MAIL_USERNAME` | usuarios | Cuenta Gmail que envía las alertas | ninguno (sin ella no se envían correos) |
-| `MAIL_PASSWORD` | usuarios | Contraseña de aplicación de esa cuenta | ninguno |
+| `MAIL_USERNAME` | usuarios | Cuenta de Gmail del sistema que envía las alertas. Por defecto, la cuenta desechable del proyecto; opcional | cuenta del proyecto |
+| `MAIL_PASSWORD` | usuarios | Contraseña de aplicación de esa cuenta. Por defecto, la de la cuenta del proyecto; opcional | contraseña de la cuenta del proyecto |
 | `JWT_SECRET` | usuarios, medicion, facturacion | Secreto de los tokens; debe ser el mismo en los tres | valor de desarrollo |
 | `USUARIOS_DB_PASSWORD` | usuarios | Contraseña de la base `usuarios` | valor de desarrollo |
 | `MEDICION_DB_PASSWORD` | medicion | Contraseña de la base `medicion` | valor de desarrollo |
@@ -90,26 +90,11 @@ Todas tienen valor por defecto de desarrollo, salvo las de correo.
 | `OPERADOR_CORREO` | usuarios | Correo del operador inicial | valor de desarrollo |
 | `USUARIOS_GRPC_HOST` y `USUARIOS_GRPC_PORT` | medicion | Dónde está el gRPC de usuarios | localhost / 9091 |
 
-**Las credenciales de correo van solo en variables de entorno. Nunca las escribas en el repositorio ni las compartas.**
+### Correo de alertas
 
-Si no defines `MAIL_USERNAME` y `MAIL_PASSWORD`, el servicio no valida que existan: el sistema sigue funcionando, pero el envío de correo falla y queda un error en el log. La anomalía sigue visible en la pantalla Alertas.
+El proyecto trae una cuenta de Gmail desechable creada solo para las alertas de desarrollo, ya configurada en `usuarios-service`: no necesitas hacer nada para recibir correos. **No uses esta cuenta para nada más.**
 
-### Alertas por correo (usuarios-service)
-
-Requiere Kafka arriba (`infra/docker-compose.yaml`, puerto 9092) y una contraseña de aplicación de Gmail. Las credenciales van solo en variables de entorno, nunca en el repositorio:
-
-```powershell
-$env:MAIL_USERNAME = "cuenta@gmail.com"
-$env:MAIL_PASSWORD = "contraseña-de-aplicación-sin-espacios"
-cd usuarios-service
-.\mvnw.cmd spring-boot:run
-```
-
-### Crear la contraseña de aplicación de Gmail
-
-1. En tu cuenta de Google, sección Seguridad, activa la verificación en dos pasos.
-2. Abre `myaccount.google.com/apppasswords`, escribe un nombre (por ejemplo `smartgrid`) y pulsa Crear.
-3. Copia las 16 letras. Solo se muestran una vez.
+Si prefieres enviar desde tu propia cuenta, define `MAIL_USERNAME` y `MAIL_PASSWORD` (contraseña de aplicación de 16 letras, con la verificación en dos pasos activa) en la terminal de usuarios-service antes de arrancarlo. Para crear la contraseña: en tu cuenta de Google activa la verificación en dos pasos, abre `myaccount.google.com/apppasswords`, escribe un nombre y copia las 16 letras (solo se muestran una vez).
 
 ## Cómo levantar el sistema
 
@@ -155,16 +140,16 @@ Abre `http://localhost:8761`: debe cargar el panel de Eureka. Déjalo abierto.
 
 ### 4. usuarios-service
 
-En una terminal nueva. Define antes las credenciales de correo si quieres probar las alertas:
+En una terminal nueva:
 
 ```powershell
-$env:MAIL_USERNAME = "tu.cuenta@gmail.com"
-$env:MAIL_PASSWORD = "contraseñadeaplicacionsinespacios"
 cd usuarios-service
 .\mvnw.cmd spring-boot:run
 ```
 
-Las variables solo viven en esa terminal; si la cierras, vuelve a definirlas. En el log debe aparecer la asignación de particiones de los temas `anomalias.detectadas` y `sensores.defectuosos`.
+Las alertas por correo salen de la cuenta de desarrollo del proyecto, sin configuración. Si quieres usar otra cuenta, define antes `$env:MAIL_USERNAME` y `$env:MAIL_PASSWORD`.
+
+En el log debe aparecer la asignación de particiones de los temas `anomalias.detectadas` y `sensores.defectuosos`.
 
 Al arrancar se crea el operador de desarrollo, si no existe ningún usuario con rol operador:
 
@@ -302,8 +287,7 @@ Para eliminarlos junto con los datos de prueba, usa `down -v` en lugar de `stop`
 | Error 503 al registrar un medidor | usuarios-service apagado o sin registrarse en Eureka | Arráncalo y espera a verlo en `http://localhost:8761` |
 | El frontend muestra 401 en todo | Sesión vencida (los tokens duran 60 minutos) o `JWT_SECRET` distinto entre servicios | Cierra sesión y entra de nuevo; si persiste, revisa que los tres servicios usen el mismo `JWT_SECRET` |
 | No hay facturas del medidor recién registrado | Facturación copia el medidor por Kafka (tarda unos segundos) o aún no hay un período completo | Espera 10 s tras registrar el medidor; revisa tarifa vigente y lecturas del período |
-| No llegan correos | `MAIL_USERNAME` y `MAIL_PASSWORD` no definidas en la terminal de usuarios-service, o contraseña de aplicación mal copiada | Defínelas en esa terminal y reinicia el servicio |
-| El log muestra `Authentication failed` al enviar | Se usó la contraseña normal de Gmail | Crea una contraseña de aplicación |
+| No llegan correos o el log muestra `Authentication failed` | La contraseña de la cuenta fue revocada o está mal copiada; o definiste variables `MAIL_*` con datos incorrectos | Si usas variables de entorno, bórralas para volver a la cuenta por defecto; si el problema sigue, avisa al equipo |
 | Los correos van a Spam | Cuenta nueva de Gmail en pruebas | Márcalos como "No es spam" |
 | Se enviaron lecturas pero no llegó el correo | usuarios-service estaba apagado cuando se publicó el evento | Arráncalo antes de enviar lecturas; los eventos perdidos no se reenvían (`auto-offset-reset: latest`) |
 | 403 en una pantalla | El rol no corresponde | Entra con la cuenta del rol correcto |
