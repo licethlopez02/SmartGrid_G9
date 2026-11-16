@@ -27,7 +27,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: ${MAIL_USERNAME:smartgrid.g9.alertas@gmail.com}
-    password: ${MAIL_PASSWORD: } # aqui se coloca la contraseña de la cuenta de correo para enviar alertas
+    password: ${MAIL_PASSWORD:rzeduxmjjqnhjxru} # aqui se coloca la contraseña de la cuenta de correo para enviar alertas
     properties:
       mail:
         smtp:
