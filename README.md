@@ -84,12 +84,14 @@ Todas tienen valor por defecto de desarrollo.
 | `MAIL_USERNAME` | usuarios | Cuenta de Gmail del sistema que envía las alertas. Por defecto, la cuenta desechable del proyecto; opcional | cuenta del proyecto |
 | `MAIL_PASSWORD` | usuarios | Contraseña de aplicación de esa cuenta. Por defecto, la de la cuenta del proyecto; opcional | contraseña de la cuenta del proyecto |
 | `JWT_SECRET` | usuarios, medicion, facturacion | Secreto de los tokens; debe ser el mismo en los tres | valor de desarrollo |
-| `USUARIOS_DB_PASSWORD` | usuarios | Contraseña de la base `usuarios` | valor de desarrollo |
-| `MEDICION_DB_PASSWORD` | medicion | Contraseña de la base `medicion` | valor de desarrollo |
-| `FACTURACION_DB_PASSWORD` | facturacion | Contraseña de la base `facturacion` | valor de desarrollo |
+| `USUARIOS_DB_PASSWORD` | usuarios | Contraseña con la que el servicio se conecta a la base `usuarios`. No la cambies sin cambiarla también en el Compose (ver nota) | valor de desarrollo |
+| `MEDICION_DB_PASSWORD` | medicion | Contraseña con la que el servicio se conecta a la base `medicion`. No la cambies sin cambiarla también en el Compose (ver nota) | valor de desarrollo |
+| `FACTURACION_DB_PASSWORD` | facturacion | Contraseña con la que el servicio se conecta a la base `facturacion`. No la cambies sin cambiarla también en el Compose (ver nota) | valor de desarrollo |
 | `OPERADOR_CONTRASENA` | usuarios | Contraseña del operador inicial | valor de desarrollo |
 | `OPERADOR_CORREO` | usuarios | Correo del operador inicial | valor de desarrollo |
 | `USUARIOS_GRPC_HOST` y `USUARIOS_GRPC_PORT` | medicion | Dónde está el gRPC de usuarios | localhost / 9091 |
+
+> **Contraseñas de las bases de datos:** las variables `*_DB_PASSWORD` solo cambian la contraseña con la que el servicio se conecta. El contenedor de Postgres usa la contraseña fija de su `docker-compose.yaml`, así que si defines una variable con otro valor, las dos dejan de coincidir y el servicio no podrá conectarse. En desarrollo no las definas. Si necesitas cambiarla, cámbiala también en el Compose y recrea la base con `down -v`.
 
 ### Correo de alertas
 
@@ -291,4 +293,5 @@ Para eliminarlos junto con los datos de prueba, usa `down -v` en lugar de `stop`
 | No llegan correos o el log muestra `Authentication failed` | La contraseña de la cuenta fue revocada o está mal copiada; o definiste variables `MAIL_*` con datos incorrectos | Si usas variables de entorno, bórralas para volver a la cuenta por defecto; si el problema sigue, avisa al equipo |
 | Los correos van a Spam | Cuenta nueva de Gmail en pruebas | Márcalos como "No es spam" |
 | Se enviaron lecturas pero no llegó el correo | El envío por SMTP falló (el servicio no lo reintenta) o el correo está en Spam | Revisa el log de usuarios-service; si dice `Authentication failed`, revisa las credenciales. Para repetir la prueba, genera lecturas nuevas |
+| El servicio no conecta a su base de datos y definiste `*_DB_PASSWORD` | La contraseña del servicio ya no coincide con la fija del `docker-compose.yaml` | Borra la variable para volver al valor por defecto |
 | 403 en una pantalla | El rol no corresponde | Entra con la cuenta del rol correcto |

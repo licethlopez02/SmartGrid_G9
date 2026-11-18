@@ -26,7 +26,7 @@
 | Deuda | Por qué se aceptó | Riesgo | Cuándo se revisa |
 |---|---|---|---|
 | Contraseña de aplicación de la cuenta de correo desechable escrita como valor por defecto en el `application.yaml` de usuarios-service | Para que el proyecto funcione al clonarlo, sin configurar nada | Cualquiera con acceso al repositorio puede enviar correos desde esa cuenta | Al terminar la entrega (revocar la contraseña) |
-| Valores por defecto de desarrollo en los `application.yaml` (contraseñas de base de datos, secreto JWT, contraseña del operador) | Valen solo para el entorno local y se pueden sobrescribir con variables de entorno | Uso de credenciales conocidas fuera del entorno local | Antes de cualquier despliegue |
+| Valores por defecto de desarrollo en los `application.yaml` (contraseñas de base de datos, secreto JWT, contraseña del operador) | Valen solo para el entorno local y se pueden sobrescribir con variables de entorno | Uso de credenciales conocidas fuera del entorno local; sobrescribir solo la variable `*_DB_PASSWORD` desincroniza al servicio del contenedor de Postgres | Antes de cualquier despliegue |
 | gRPC entre servicios sin autenticación (`GrpcSecurityConfig`) | El proyecto corre solo en local y llegó hasta la comunicación entre microservicios | Acceso no autorizado si se exponen los puertos gRPC | Antes de cualquier despliegue |
 | Alertas por correo sin reintentos, con entrega al menos una vez | Mantener la solución simple (ADR-005) | Correos duplicados o alertas no enviadas si usuarios-service está apagado o el SMTP falla | Si el proyecto continúa después de la defensa |
 | Bases de datos sin volúmenes en Docker Compose | Solo se usan datos de prueba | Pérdida de datos al eliminar el contenedor | Antes de usar datos que importen |
