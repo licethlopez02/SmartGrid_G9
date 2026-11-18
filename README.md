@@ -53,6 +53,7 @@ SmartGrid_G9/
 ├── medicion-service/       Medidores, lecturas, anomalías y consumo
 ├── facturacion-service/    Tarifas y facturas
 ├── bruno/                  Colección de pruebas de la API
+├── docs/cierre/            Documentos de cierre (ATAM-lite, gobernanza, resumen ejecutivo, retrospectivas)
 ├── evidencias/             Evidencias del desarrollo
 └── ARQUITECTURA.md
 ```
@@ -222,7 +223,7 @@ Con todo el backend y el frontend en marcha:
 | 9 | Usuario | Alertas | Una anomalía pendiente con valor 2; la lista se actualiza sola cada 30 s |
 | 10 | Usuario | Pulsar Resolver | La anomalía pasa a resuelta y sigue así al recargar |
 | 11 | Operador | "Consumo por zona" con los mismos filtros del paso 6 | Total X + 4 |
-| 12 | Usuario | Revisar el buzón (y Spam) | 2 correos: consumo anómalo (valor 2) y sensor defectuoso (valor -5) |
+| 12 | Usuario | Revisar el buzón (y Spam) | 2 correos: consumo anómalo (valor 2) y sensor defectuoso (valor -5). Si el envío falla, el servicio no lo reintenta: la anomalía sigue visible en "Alertas" y para repetir la prueba hay que enviar lecturas nuevas |
 
 ### Simulador de medidor
 
@@ -289,5 +290,5 @@ Para eliminarlos junto con los datos de prueba, usa `down -v` en lugar de `stop`
 | No hay facturas del medidor recién registrado | Facturación copia el medidor por Kafka (tarda unos segundos) o aún no hay un período completo | Espera 10 s tras registrar el medidor; revisa tarifa vigente y lecturas del período |
 | No llegan correos o el log muestra `Authentication failed` | La contraseña de la cuenta fue revocada o está mal copiada; o definiste variables `MAIL_*` con datos incorrectos | Si usas variables de entorno, bórralas para volver a la cuenta por defecto; si el problema sigue, avisa al equipo |
 | Los correos van a Spam | Cuenta nueva de Gmail en pruebas | Márcalos como "No es spam" |
-| Se enviaron lecturas pero no llegó el correo | usuarios-service estaba apagado cuando se publicó el evento | Arráncalo antes de enviar lecturas; los eventos perdidos no se reenvían (`auto-offset-reset: latest`) |
+| Se enviaron lecturas pero no llegó el correo | El envío por SMTP falló (el servicio no lo reintenta) o el correo está en Spam | Revisa el log de usuarios-service; si dice `Authentication failed`, revisa las credenciales. Para repetir la prueba, genera lecturas nuevas |
 | 403 en una pantalla | El rol no corresponde | Entra con la cuenta del rol correcto |
