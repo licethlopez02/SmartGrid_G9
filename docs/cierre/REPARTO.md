@@ -1,4 +1,4 @@
-# Reparto del taller de cierre (Lección 13)
+# Reparto del taller de cierre 
 
 | Parte | Archivo | Líder | Revisa |
 |---|---|---|---|
@@ -25,3 +25,13 @@ En el historial de Git, `.mailmap` unifica los nombres de Liceth con `liceth.lop
 | 5. Gobernanza y deuda | 1 | Liceth |
 | 6. Lo que aprendimos y lo que cambiaríamos | 1 | Dev 1 |
 | 7. Resumen ejecutivo en una frase | 1 | Liceth |
+
+## Socialización (Parte B, 15 minutos)
+
+| Punto | Minutos | Habla |
+|---|---|---|
+| Quiénes somos y el problema | 0–1 | Liceth |
+| Arquitectura: diagrama y servicios | 1–4 | Liceth |
+| Demo en vivo completa (registrar medidor, lecturas, factura, alertas) | 4–8 | Yaider |
+| Dos decisiones (ADR) y propuestas | 8–10 | Yaider |
+| Preguntas | 10–13 | Los dos |
