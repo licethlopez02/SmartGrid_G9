@@ -1,0 +1,176 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Length 239 >>
+stream
+BT
+/F1 26 Tf
+72 520 Td
+(SMART GRID - DEFENSA) Tj
+/F1 14 Tf
+0 -48 Td
+(Grupo 9 | Dev 1: Yaider) Tj
+0 -28 Td
+(Sistema de lecturas, alertas y facturacion) Tj
+0 -28 Td
+(Objetivo: cobrar solo con datos completos y avisar a tiempo) Tj
+0 -28 Td
+ET
+endstream
+endobj
+2 0 obj
+<< /Length 354 >>
+stream
+BT
+/F1 26 Tf
+72 520 Td
+(1. Problema y resultado) Tj
+/F1 14 Tf
+0 -48 Td
+(Un medidor envia lecturas de consumo electrico.) Tj
+0 -28 Td
+(El sistema detecta anomalias, notifica al usuario y genera facturas.) Tj
+0 -28 Td
+(Demo validada: lecturas 1, 1, 2 y -5.) Tj
+0 -28 Td
+(Resultado: 4 kWh validos, una anomalia y alerta de sensor defectuoso.) Tj
+0 -28 Td
+ET
+endstream
+endobj
+3 0 obj
+<< /Length 387 >>
+stream
+BT
+/F1 26 Tf
+72 520 Td
+(2. Arquitectura) Tj
+/F1 14 Tf
+0 -48 Td
+(Gateway + Eureka: entrada unica y descubrimiento.) Tj
+0 -28 Td
+(Usuarios: cuentas, JWT y correo.) Tj
+0 -28 Td
+(Medicion: medidores, lecturas, anomalias y Outbox.) Tj
+0 -28 Td
+(Facturacion: tarifas, periodos completos y facturas.) Tj
+0 -28 Td
+(PostgreSQL por servicio; Kafka para hechos; gRPC para consultas.) Tj
+0 -28 Td
+ET
+endstream
+endobj
+4 0 obj
+<< /Length 382 >>
+stream
+BT
+/F1 26 Tf
+72 520 Td
+(3. Dos decisiones clave) Tj
+/F1 14 Tf
+0 -48 Td
+(gRPC para consultas que necesitan respuesta inmediata.) Tj
+0 -28 Td
+(Outbox + Kafka para eventos sin escritura dual.) Tj
+0 -28 Td
+(Cada servicio es dueÒo de su base.) Tj
+0 -28 Td
+(Ventaja: desacoplamiento y tolerancia a Kafka caido.) Tj
+0 -28 Td
+(Costo: consistencia eventual y mayor operacion.) Tj
+0 -28 Td
+ET
+endstream
+endobj
+5 0 obj
+<< /Length 403 >>
+stream
+BT
+/F1 26 Tf
+72 520 Td
+(4. Matriz y riesgos) Tj
+/F1 14 Tf
+0 -48 Td
+(Alternativas: monolito modular, microservicios sincronicos y microservicios con eventos.) Tj
+0 -28 Td
+(Puntajes: 3.75 | 3.55 | 3.95 sobre 5.) Tj
+0 -28 Td
+(Se elige eventos por el objetivo del curso y la oportunidad de alertas.) Tj
+0 -28 Td
+(Riesgos: correo sin reintentos, gRPC sin autenticacion y consultas crecientes.) Tj
+0 -28 Td
+ET
+endstream
+endobj
+6 0 obj
+<< /Length 419 >>
+stream
+BT
+/F1 26 Tf
+72 520 Td
+(5. Cierre) Tj
+/F1 14 Tf
+0 -48 Td
+(El alcance HU-01 a HU-09 queda implementado y probado.) Tj
+0 -28 Td
+(La factura no se genera con periodos incompletos.) Tj
+0 -28 Td
+(Proximo paso: idempotencia y reintentos de alertas.) Tj
+0 -28 Td
+(Despues: autenticacion gRPC y medicion de rendimiento.) Tj
+0 -28 Td
+(Mensaje final: separar dominios funciona, pero la resiliencia debe continuar.) Tj
+0 -28 Td
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+8 0 obj
+<< /Type /Pages /Kids [9 0 R 10 0 R 11 0 R 12 0 R 13 0 R 14 0 R] /Count 6 >>
+endobj
+9 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 7 0 R >> >> /Contents 1 0 R >>
+endobj
+10 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 7 0 R >> >> /Contents 2 0 R >>
+endobj
+11 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 7 0 R >> >> /Contents 3 0 R >>
+endobj
+12 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 7 0 R >> >> /Contents 4 0 R >>
+endobj
+13 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 7 0 R >> >> /Contents 5 0 R >>
+endobj
+14 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 7 0 R >> >> /Contents 6 0 R >>
+endobj
+15 0 obj
+<< /Type /Catalog /Pages 8 0 R >>
+endobj
+xref
+0 16
+0000000000 65535 f 
+0000000015 00000 n 
+0000000305 00000 n 
+0000000710 00000 n 
+0000001148 00000 n 
+0000001581 00000 n 
+0000002035 00000 n 
+0000002505 00000 n 
+0000002575 00000 n 
+0000002667 00000 n 
+0000002793 00000 n 
+0000002920 00000 n 
+0000003047 00000 n 
+0000003174 00000 n 
+0000003301 00000 n 
+0000003428 00000 n 
+trailer
+<< /Size 16 /Root 15 0 R >>
+startxref
+3478
+%%EOF

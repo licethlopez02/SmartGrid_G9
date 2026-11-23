@@ -3,12 +3,12 @@
 | Parte | Archivo | Líder | Revisa |
 |---|---|---|---|
 | Evaluación ATAM-lite | ATAM-LITE.md | Liceth López | Dev 1 (Yaider, cuenta `yaider162`) |
-| Matriz de decisión ponderada | MATRIZ.md | Dev 1 (Yaider, cuenta `yaider162`) | Liceth López |
-| Caso de éxito o fracaso | CASO.md | Dev 1 (Yaider, cuenta `yaider162`) | Liceth López |
+| Matriz de decisión ponderada | [MATRIZ.md](MATRIZ.md) | Dev 1 (Yaider, cuenta `yaider162`) | Liceth López |
+| Caso de éxito o fracaso | [CASO.md](CASO.md) | Dev 1 (Yaider, cuenta `yaider162`) | Liceth López |
 | Gobernanza | GOBERNANZA.md | Liceth López | Dev 1 (Yaider, cuenta `yaider162`) |
 | Resumen ejecutivo | RESUMEN-EJECUTIVO.md | Liceth López | Dev 1 (Yaider, cuenta `yaider162`) |
-| Presentación de la defensa (PDF) | — | Dev 1 (Yaider, cuenta `yaider162`) | Liceth López |
-| Retrospectiva individual | RETROSPECTIVA-<nombre>.md | Cada integrante la suya | — |
+| Presentación de la defensa (PDF) | [PRESENTACION-DEFENSA.pdf](PRESENTACION-DEFENSA.pdf) | Dev 1 (Yaider, cuenta `yaider162`) | Liceth López |
+| Retrospectiva individual | [RETROSPECTIVA-Yaider.md](RETROSPECTIVA-Yaider.md) | Yaider | — |
 
 Todas las partes se discuten en grupo; el líder redacta y el otro integrante revisa.
 
