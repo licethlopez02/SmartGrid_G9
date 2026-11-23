@@ -29,7 +29,7 @@
 | Valores por defecto de desarrollo en los `application.yaml` (contraseñas de base de datos, secreto JWT, contraseña del operador) | Valen solo para el entorno local y se pueden sobrescribir con variables de entorno | Uso de credenciales conocidas fuera del entorno local; sobrescribir solo la variable `*_DB_PASSWORD` desincroniza al servicio del contenedor de Postgres | Antes de cualquier despliegue |
 | gRPC entre servicios sin autenticación (`GrpcSecurityConfig`) | El proyecto corre solo en local y llegó hasta la comunicación entre microservicios | Acceso no autorizado si se exponen los puertos gRPC | Antes de cualquier despliegue |
 | Alertas por correo sin reintentos, con entrega al menos una vez | Mantener la solución simple (ADR-005) | Correos duplicados o alertas no enviadas si usuarios-service está apagado o el SMTP falla | Si el proyecto continúa después de la defensa |
-| Bases de datos sin volúmenes en Docker Compose | Solo se usan datos de prueba | Pérdida de datos al eliminar el contenedor | Antes de usar datos que importen |
+| Volúmenes con nombre para persistencia de las bases (resuelto) | Cada base de usuarios, medicion y facturacion usa un volumen con nombre declarado en su Compose | Los datos sobreviven a recrear el contenedor | Resuelto: verificado en los tres Compose |
 | Sin Circuit Breaker en medicion-service | Solo se protege con el plazo de 5 s y la respuesta 503 | Lentitud de usuarios-service que se propaga a medicion | Si el proyecto continúa |
 | Idempotencia de los consumidores Kafka no verificada | No se revisó en el alcance de esta etapa | Un duplicado puede repetir una acción | Si el proyecto continúa |
 

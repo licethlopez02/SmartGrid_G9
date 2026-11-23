@@ -8,7 +8,7 @@
 | Gobernanza | GOBERNANZA.md | Liceth López | Dev 1 (Yaider, cuenta `yaider162`) |
 | Resumen ejecutivo | RESUMEN-EJECUTIVO.md | Liceth López | Dev 1 (Yaider, cuenta `yaider162`) |
 | Presentación de la defensa (PDF) | [PRESENTACION-DEFENSA.pdf](PRESENTACION-DEFENSA.pdf) | Dev 1 (Yaider, cuenta `yaider162`) | Liceth López |
-| Retrospectiva individual | [RETROSPECTIVA-Yaider.md](RETROSPECTIVA-Yaider.md) | Yaider | — |
+| Retrospectiva individual | [RETROSPECTIVA-Liceth.md](RETROSPECTIVA-Liceth.md) y [RETROSPECTIVA-Yaider.md](RETROSPECTIVA-Yaider.md) | Cada integrante (la propia) | — |
 
 Todas las partes se discuten en grupo; el líder redacta y el otro integrante revisa.
 
